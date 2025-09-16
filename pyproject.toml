@@ -1,0 +1,9 @@
+[project]
+name = "fastapi-movies"
+version = "0.1.0"
+description = "FastAPI test project"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standart]>=0.116.2",
+]
