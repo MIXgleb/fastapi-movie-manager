@@ -1,9 +1,112 @@
 [project]
-name = "fastapi-movies"
+name = "fastapi-movie-manager"
 version = "0.1.0"
-description = "FastAPI test project"
+description = "FastAPI Movie Manager Project"
 readme = "README.md"
+repository = "https://github.com/MIXgleb/fastapi-movie-manager"
 requires-python = ">=3.13"
-dependencies = [
-    "fastapi[standart]>=0.116.2",
+authors = [
+    {name = "Gleb Mikhalev", email = "gleb1@bk.ru"}
 ]
+dependencies = [
+    "alembic>=1.16.5",
+    "asyncpg>=0.30.0",
+    "fastapi-limiter>=0.1.6",
+    "fastapi[standard]>=0.116.2",
+    "loguru>=0.7.3",
+    "passlib>=1.7.4",
+    "pydantic-settings>=2.10.1",
+    "pyjwt>=2.10.1",
+    "redis>=6.4.0",
+    "sqlalchemy>=2.0.43",
+]
+
+[dependency-groups]
+lint = [
+    "ruff>=0.13.0",
+]
+test = [
+    "pytest>=8.4",
+    "pytest-cov>=6.1",
+    "pytest-randomly>=3.16",
+    "pytest-xdist>=3.7",
+    "pytest-asyncio>=1.0",
+    "covdefaults>=2.3",
+]
+
+[tool.ruff]
+# Ruff config: https://docs.astral.sh/ruff/settings
+line-length = 100
+target-version = "py313"
+extend-exclude = [
+    "alembic/",
+    "tests/",
+]
+
+[tool.ruff.format]
+preview = true
+quote-style = "double"
+docstring-code-format = true
+
+[tool.ruff.lint]
+preview = true
+select = ["ALL"]
+allowed-confusables = []
+ignore = [
+    "D203",     # blank line before class docstring (-> D211)
+    "D212",     # docstring starts from the first line (-> D213)
+    "COM812",   # missing trailing comma (due to ruff conflict)
+    "CPY001",   # copyright notice
+    "D100",     # docstring in public module
+    "D101",     # Missing docstring in public class
+    "D104",     # docstring in public package
+]
+
+[tool.ruff.lint.pylint]
+allow-dunder-method-names = ["__tablename__"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+"app/api/v1/routers/*.py" = [
+    "ANN201",   # Missing return type annotation for public function
+]
+"app/database/models/mixins/*.py" = [
+    "D103",     # Missing docstring in public function
+]
+"app/core/loggers.py" = [
+    "D103",     # Missing docstring in public function
+]
+"app/core/exceptions/exc.py" = [
+    "D107",     # Missing docstring in `__init__`
+]
+"app/core/exceptions/exc_handlers.py" = [
+    "D103",     # Missing docstring in public function
+]
+
+[tool.pytest.ini_options]
+# Pytest config: http://doc.pytest.org/en/latest/customize.html
+testpaths = ["tests"]
+xfail_strict = true
+filterwarnings = ["error"]
+asyncio_mode = "strict"
+
+addopts = [
+    "--strict-config",
+    "--strict-markers",
+    "--doctest-modules",
+    # pytest-cov
+    "--cov=app",
+    "--cov-branch",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=html",
+    "--cov-fail-under=0",
+    # pytest-xdist
+    "-n=auto",
+]
+
+[tool.coverage.run]
+# Coverage config: https://coverage.readthedocs.io/
+plugins = ["covdefaults"]
+omit  = []
