@@ -1,14 +1,19 @@
 import time
-from typing import override
+from typing import final, override
 
 from fastapi import Request, Response
 from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 
+@final
 class LoggingMiddleware(BaseHTTPMiddleware):
     @override
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+    async def dispatch(
+        self,
+        request: Request,
+        call_next: RequestResponseEndpoint,
+    ) -> Response:
         start_time = time.time()
         method = request.method
         path = request.url.path

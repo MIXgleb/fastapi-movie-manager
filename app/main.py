@@ -4,8 +4,7 @@ from contextlib import asynccontextmanager
 import redis.asyncio as redis
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import ORJSONResponse, RedirectResponse
+from fastapi.responses import ORJSONResponse
 from fastapi_limiter import FastAPILimiter
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
@@ -19,8 +18,8 @@ from app.core.exceptions import (
     validation_exception_handler,
 )
 from app.core.loggers import setup_logger
-from app.core.middlewares import LoggingMiddleware
-from app.database import SqlAlchemyDB
+from app.core.middlewares import CORSMiddleware, LoggingMiddleware
+from app.database import SqlAlchemyDbHelper
 
 
 @asynccontextmanager
@@ -41,11 +40,17 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
     logger.info("🚀 Application starting up...")
 
     logger.info("Connecting to redis...")
-    redis_connection = redis.from_url(settings.redis.url, encoding=settings.redis.encoding)  # type: ignore[reportUnknownMemberType]
+    redis_connection = redis.Redis(
+        host=settings.redis.host,
+        port=settings.redis.port,
+        db=settings.redis.db_request_limiter,
+        encoding=settings.redis.encoding,
+    )
+    await redis_connection.ping()  # type: ignore[reportUnknownMemberType]
     logger.info("Connection to redis completed.")
 
     logger.info("Connecting to database...")
-    db = SqlAlchemyDB()
+    db = SqlAlchemyDbHelper()
     await db.init(str(settings.db.url))
     logger.info("Connection to database completed.")
 
@@ -64,31 +69,18 @@ app = FastAPI(
     title="Movie manager",
     default_response_class=ORJSONResponse,
     lifespan=lifespan,
+    openapi_url=None,
+    docs_url=None,
+    redoc_url=None,
+    swagger_ui_oauth2_redirect_url=None,
 )
 
 app.include_router(api_router)
+
 app.add_middleware(LoggingMiddleware)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["*"],
-)
+app.add_middleware(CORSMiddleware)
 
 app.add_exception_handler(Exception, global_exception_handler)
 app.add_exception_handler(SQLAlchemyError, database_exception_handler)
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
-
-
-@app.get("/", tags=["Redirect"])
-def redirect_root() -> RedirectResponse:
-    """Redirect the root page '/' to the doc page '/docs'.
-
-    Returns
-    -------
-    RedirectResponse
-        redirect response (307)
-    """
-    return RedirectResponse("/docs")

@@ -1,5 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Annotated, Any
+
+from fastapi import Depends
+
+from app.core.security import Payload, TokenHelper
+
+PayloadByToken = Annotated[Payload, Depends(TokenHelper())]
 
 
 class EndpointDependencyBase(ABC):

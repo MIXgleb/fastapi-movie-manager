@@ -17,7 +17,7 @@ __all__ = (
 )
 
 
-from app.core.exceptions.exc import (
+from app.core.exceptions.errors import (
     AuthorizationError,
     DatabaseSessionError,
     InvalidTokenError,

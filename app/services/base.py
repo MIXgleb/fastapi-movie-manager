@@ -1,6 +1,10 @@
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+)
 
-from app.database import DbBase, DbUOW, UOWBase
+from app.database import DbHelperBase, DbUOW, UOWBase
 
 
 class ServiceBase:
@@ -21,7 +25,7 @@ class DbServiceBase[Engine, Session, SessionFactory](ServiceBase):
     def __init__(
         self,
         type_uow: type[DbUOW[Engine, Session, SessionFactory]],
-        db: DbBase[Engine, Session, SessionFactory],
+        db: DbHelperBase[Engine, Session, SessionFactory],
     ) -> None:
         """Initialize the database service.
 
@@ -37,5 +41,5 @@ class DbServiceBase[Engine, Session, SessionFactory](ServiceBase):
 
 
 class SqlAlchemyServiceBase(
-    DbServiceBase[AsyncEngine, AsyncSession, async_sessionmaker[AsyncSession]]
+    DbServiceBase[AsyncEngine, AsyncSession, async_sessionmaker[AsyncSession]],
 ): ...

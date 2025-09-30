@@ -1,23 +1,29 @@
 from typing import Annotated, final, override
 
-from fastapi import Depends, Path, Request
+from fastapi import (
+    Depends,
+    Path,
+    Request,
+    params,
+)
 
-from app.api.v1.deps.base import EndpointDependencyBase
+from app.api.v1.dependencies.base import EndpointDependencyBase, PayloadByToken
 from app.core import exceptions as exc
-from app.core.security import TokenHelper
-from app.schemas import Payload, Role
+from app.domains import UserRole
 from app.services import MovieService, SqlAlchemyServiceHelper
+
+UserIdFromPath = Annotated[int, Path()]
 
 
 @final
-class UserOwnershipChecker(EndpointDependencyBase):
+class _UserOwnershipChecker(EndpointDependencyBase):
     """Verifying the user's ownership of a resource."""
 
     @override
     async def __call__(
         self,
-        user_id: Annotated[int, Path()],
-        payload: Annotated[Payload, Depends(TokenHelper())],
+        user_id: UserIdFromPath,
+        payload: PayloadByToken,
         request: Request,
     ) -> None:
         """Check the user's ownership rights.
@@ -42,7 +48,7 @@ class UserOwnershipChecker(EndpointDependencyBase):
             access is forbidden
         """
         method = request.method
-        is_admin = payload.user_role == Role.admin
+        is_admin = payload.user_role == UserRole.admin
 
         if method == "POST":
             raise exc.WrondMethodError
@@ -53,8 +59,11 @@ class UserOwnershipChecker(EndpointDependencyBase):
         raise exc.ResourceOwnershipError
 
 
+UserOwnership = Depends(_UserOwnershipChecker())
+
+
 @final
-class MovieOwnershipChecker(EndpointDependencyBase):
+class _MovieOwnershipChecker(EndpointDependencyBase):
     """Verifying the user's ownership of a movie."""
 
     __slots__ = ("service_helper",)
@@ -72,8 +81,8 @@ class MovieOwnershipChecker(EndpointDependencyBase):
     @override
     async def __call__(
         self,
-        movie_id: Annotated[int, Path()],
-        payload: Annotated[Payload, Depends(TokenHelper())],
+        movie_id: UserIdFromPath,
+        payload: PayloadByToken,
         request: Request,
     ) -> None:
         """Check the user's ownership rights.
@@ -98,7 +107,7 @@ class MovieOwnershipChecker(EndpointDependencyBase):
             access is forbidden
         """
         method = request.method
-        is_admin = payload.user_role == Role.admin
+        is_admin = payload.user_role == UserRole.admin
         movie = await self.service_helper.service.get_movie(movie_id)
 
         if method == "POST":
@@ -111,3 +120,21 @@ class MovieOwnershipChecker(EndpointDependencyBase):
             return
 
         raise exc.ResourceOwnershipError
+
+
+def dep_movie_ownership_getter(
+    service_helper: SqlAlchemyServiceHelper[MovieService],
+) -> params.Depends:
+    """Get dependencies on resource ownership.
+
+    Parameters
+    ----------
+    service_helper : SqlAlchemyServiceHelper
+        movie service helper
+
+    Returns
+    -------
+    Depends
+        dependency on ownership
+    """
+    return Depends(_MovieOwnershipChecker(service_helper))

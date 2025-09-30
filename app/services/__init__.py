@@ -10,9 +10,19 @@ __all__ = (
 from abc import ABC, abstractmethod
 from typing import Any, final, override
 
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+)
 
-from app.database import DbBase, DbUOW, SqlAlchemyDB, SqlAlchemyUOW, UOWBase
+from app.database import (
+    DbHelperBase,
+    DbUOW,
+    SqlAlchemyDbHelper,
+    SqlAlchemyUOW,
+    UOWBase,
+)
 from app.services.auth import AuthService, AuthServiceBase
 from app.services.base import DbServiceBase, ServiceBase, SqlAlchemyServiceBase
 from app.services.movie import MovieService, MovieServiceBase
@@ -57,7 +67,7 @@ class DbServiceHelperBase[
     __slots__ = ("db",)
 
     type_uow: type[DbUOW[Engine, Session, SessionFactory]]
-    type_db: type[DbBase[Engine, Session, SessionFactory]]
+    type_db: type[DbHelperBase[Engine, Session, SessionFactory]]
 
     def __init__(self, type_service: type[Service]) -> None:
         """Initialize the database service helper.
@@ -90,4 +100,4 @@ class SqlAlchemyServiceHelper[Service: SqlAlchemyServiceBase](
     ]
 ):
     type_uow = SqlAlchemyUOW
-    type_db = SqlAlchemyDB
+    type_db = SqlAlchemyDbHelper

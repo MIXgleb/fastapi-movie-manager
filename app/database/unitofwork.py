@@ -2,10 +2,14 @@ from abc import ABC, abstractmethod
 from types import TracebackType
 from typing import ClassVar, Self, final, override
 
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+)
 
 import app.core.exceptions as exc
-from app.database.db import DbBase
+from app.database.db_helpers import DbHelperBase
 from app.database.repositories import (
     MovieRepository,
     MovieRepositoryBase,
@@ -44,7 +48,10 @@ class UOWBase(ABC):
         exc_tb : TracebackType | None
             traceback
         """
-        await self.rollback()
+        if exc_type is not None:
+            await self.rollback()
+        else:
+            await self.commit()
 
     @abstractmethod
     async def commit(self) -> None:
@@ -63,12 +70,12 @@ class DbUOW[Engine, Session, SessionFactory](UOWBase):
     users: ClassVar[UserRepositoryBase]
     movies: ClassVar[MovieRepositoryBase]
 
-    def __init__(self, db: DbBase[Engine, Session, SessionFactory]) -> None:
+    def __init__(self, db: DbHelperBase[Engine, Session, SessionFactory]) -> None:
         """Initialize the database unit-of-work interface.
 
         Parameters
         ----------
-        db : DbBase[Engine, Session, SessionFactory]
+        db : DbHelperBase
             database helper instance
         """
         self._session: Session | None = None
@@ -76,7 +83,9 @@ class DbUOW[Engine, Session, SessionFactory](UOWBase):
 
 
 @final
-class SqlAlchemyUOW(DbUOW[AsyncEngine, AsyncSession, async_sessionmaker[AsyncSession]]):
+class SqlAlchemyUOW(
+    DbUOW[AsyncEngine, AsyncSession, async_sessionmaker[AsyncSession]],
+):
     @override
     async def __aenter__(self) -> Self:
         self._session = self._session_factory()

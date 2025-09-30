@@ -1,27 +1,30 @@
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import override
+from typing import Any, override
 
-from pydantic import BaseModel
 from sqlalchemy import Select, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 
+from app.domains import DataclassType
 
-class RepositoryBase[Model, Create, Update, Filters](ABC):
+type DictAny = dict[Any, Any]
+
+
+class RepositoryBase[Model, Filter](ABC):
     @abstractmethod
-    async def create(self, item_create: Create) -> Model:
+    async def create(self, item_create: DictAny) -> Model:
         """Create a new item.
 
         Parameters
         ----------
-        item_create : Create
+        item_create : DictAny
             item data to create
 
         Returns
         -------
         Model
-            created item's data
+            created item model
         """
         raise NotImplementedError
 
@@ -37,12 +40,12 @@ class RepositoryBase[Model, Create, Update, Filters](ABC):
         Returns
         -------
         Model | None
-            item data
+            item model
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def update(self, item_id: int, item_update: Update) -> Model | None:
+    async def update(self, item_id: int, item_update: DictAny) -> Model | None:
         """Update the item by id.
 
         Parameters
@@ -50,13 +53,13 @@ class RepositoryBase[Model, Create, Update, Filters](ABC):
         item_id : int
             item id
 
-        item_update : Update
+        item_update : DictAny
             item data to update
 
         Returns
         -------
         Model | None
-            updated item data
+            updated item model
         """
         raise NotImplementedError
 
@@ -72,33 +75,43 @@ class RepositoryBase[Model, Create, Update, Filters](ABC):
         Returns
         -------
         Model | None
-            item data
+            item model
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def read_all(self, filters: Filters) -> Sequence[Model]:
+    async def read_all(
+        self,
+        filters: Filter,
+        _relation_id: int | None,
+    ) -> Sequence[Model]:
         """Read all items with the search filter.
 
         Parameters
         ----------
-        filters : Filters
+        filters : Filter
             item search filter
+
+        relation_id : int | None
+            relationship id
 
         Returns
         -------
         Sequence[Model]
             list of items
+
+        Raises
+        ------
+        TypeError
+            missing 'relation_id' argument
         """
         raise NotImplementedError
 
 
 class SqlAlchemyRepositoryBase[
     Model: DeclarativeBase,
-    Create: BaseModel,
-    Update: BaseModel,
-    Filters: BaseModel,
-](RepositoryBase[Model, Create, Update, Filters]):
+    Filter: DataclassType,
+](RepositoryBase[Model, Filter]):
     __slots__ = ("session",)
 
     model: type[Model]
@@ -114,8 +127,8 @@ class SqlAlchemyRepositoryBase[
         self.session = session
 
     @override
-    async def create(self, item_create: Create) -> Model:
-        new_item = self.model(**item_create.model_dump())
+    async def create(self, item_create: DictAny) -> Model:
+        new_item = self.model(**item_create)
         self.session.add(new_item)
         await self.session.flush()
         return new_item
@@ -125,15 +138,14 @@ class SqlAlchemyRepositoryBase[
         return await self.session.get(self.model, item_id)
 
     @override
-    async def update(self, item_id: int, item_update: Update) -> Model | None:
+    async def update(self, item_id: int, item_update: DictAny) -> Model | None:
         item = await self.read(item_id)
 
         if item is None:
             return None
 
-        for key, value in item_update.model_dump().items():
-            if value is not None:
-                setattr(item, key, value)
+        for key, value in item_update.items():
+            setattr(item, key, value)
 
         return item
 
@@ -148,9 +160,20 @@ class SqlAlchemyRepositoryBase[
         return item
 
     @override
-    async def read_all(self, filters: Filters) -> Sequence[Model]:
+    async def read_all(
+        self,
+        filters: Filter,
+        _relation_id: int | None,
+    ) -> Sequence[Model]:
+        if _relation_id is None:
+            msg_err = (
+                f"{self.model}.read_all() missing 1 required "
+                "positional argument: 'relation_id'"
+            )
+            raise TypeError(msg_err)
+
         query = select(self.model)
-        query = await self._filter_query(query, filters)
+        query = await self._filter_query(query, filters, _relation_id)
         result = await self.session.scalars(query)
         return result.all()
 
@@ -158,7 +181,8 @@ class SqlAlchemyRepositoryBase[
     async def _filter_query(
         cls,
         query: Select[tuple[Model]],
-        filters: Filters,
+        _filters: Filter,
+        _relation_id: int | None,
     ) -> Select[tuple[Model]]:
         """Filter the query by the specified search filter.
 
@@ -167,13 +191,15 @@ class SqlAlchemyRepositoryBase[
         query : Select[tuple[Model]]
             database query expression
 
-        filters : Filters
+        filters : Filter
             item search filter
+
+        relation_id : int | None
+            relationship id
 
         Returns
         -------
         Select[tuple[Model]]
             filtered query expression
         """
-        _ = filters
         return query

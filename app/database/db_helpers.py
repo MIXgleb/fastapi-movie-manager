@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
-from typing import Self, final, override
+from typing import ClassVar, Self, final, override
 
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -13,10 +13,10 @@ import app.core.exceptions as exc
 from app.core.config import settings
 
 
-class DbBase[Engine, Session, SessionFactory](ABC):
+class DbHelperBase[Engine, Session, SessionFactory](ABC):
     __slots__ = ("_engine", "_session_factory")
 
-    _instance: Self | None = None
+    _instance: ClassVar[Self | None] = None
 
     @final
     def __new__(cls) -> Self:
@@ -86,7 +86,9 @@ class DbBase[Engine, Session, SessionFactory](ABC):
 
 
 @final
-class SqlAlchemyDB(DbBase[AsyncEngine, AsyncSession, async_sessionmaker[AsyncSession]]):
+class SqlAlchemyDbHelper(
+    DbHelperBase[AsyncEngine, AsyncSession, async_sessionmaker[AsyncSession]],
+):
     @override
     async def init(self, url: str) -> None:
         self._engine = create_async_engine(

@@ -1,8 +1,16 @@
 from collections.abc import Sequence
-from typing import TypedDict
+from typing import Any, TypedDict
 
 from fastapi import HTTPException, status
 from fastapi.exceptions import RequestValidationError
+from pydantic import BaseModel
+
+
+class CustomValidationErrorSchema(BaseModel):
+    field: Sequence[Any]
+    message: str
+    extra_message: dict[Any, Any]
+    type: str
 
 
 class TokenExpiredError(HTTPException):
@@ -10,7 +18,6 @@ class TokenExpiredError(HTTPException):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token was expired.",
-            headers={"WWW-Authenticate": "Bearer"},
         )
 
 
@@ -19,7 +26,6 @@ class InvalidTokenError(HTTPException):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=detail,
-            headers={"WWW-Authenticate": "Bearer"},
         )
 
 
@@ -33,7 +39,6 @@ class AuthorizationError(HTTPException):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=detail,
-            headers={"WWW-Authenticate": "Bearer"},
         )
 
 
@@ -65,14 +70,14 @@ class WrondMethodError(HTTPException):
 class QueryValueError(RequestValidationError, AttributeError):
     def __init__(self, query_value: str, query_key: str) -> None:
         super().__init__([
-            QueryValueError.RequestValidationErrorDict(
+            QueryValueError._DictRequestValidationError(
                 loc=["query", query_key],
-                msg=f"There is no '{query_value}' attribute",
+                msg=f"There is no {query_value!r} attribute",
                 type="wrong_query_value",
             )
         ])
 
-    class RequestValidationErrorDict(TypedDict):
+    class _DictRequestValidationError(TypedDict):
         """Typed dict."""
 
         loc: Sequence[str]
