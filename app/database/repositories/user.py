@@ -1,16 +1,21 @@
 from abc import abstractmethod
+from collections.abc import Sequence
 from typing import final, override
 
-from pydantic import BaseModel
 from sqlalchemy import Select, select
 
-from app.core.exceptions import QueryValueError
+import app.core.exceptions as exc
 from app.database.models import User
-from app.database.repositories.base import RepositoryBase, SqlAlchemyRepositoryBase
-from app.schemas import UserCreate, UserFilters
+from app.database.repositories.base import (
+    BaseDatabaseRepository,
+    BaseSqlAlchemyRepository,
+)
+from app.domains import UserFilterDM
 
 
-class UserRepositoryBase(RepositoryBase[User, UserCreate, BaseModel, UserFilters]):
+class BaseUserRepository(
+    BaseDatabaseRepository[User, UserFilterDM],
+):
     @abstractmethod
     async def read_by_name(self, username: str) -> User | None:
         """Read the user by username.
@@ -23,15 +28,36 @@ class UserRepositoryBase(RepositoryBase[User, UserCreate, BaseModel, UserFilters
         Returns
         -------
         User | None
-            user data
+            user model
+        """
+        raise NotImplementedError
+
+    @override
+    @abstractmethod
+    async def read_all(
+        self,
+        filters: UserFilterDM,
+        _relation_id: int | None = None,
+    ) -> Sequence[User]:
+        """Read all users with the search filter.
+
+        Parameters
+        ----------
+        filters : UserFilterDM
+            user search filter
+
+        Returns
+        -------
+        Sequence[User]
+            list of users
         """
         raise NotImplementedError
 
 
 @final
 class UserRepository(
-    SqlAlchemyRepositoryBase[User, UserCreate, BaseModel, UserFilters],
-    UserRepositoryBase,
+    BaseSqlAlchemyRepository[User, UserFilterDM],
+    BaseUserRepository,
 ):
     model = User
 
@@ -42,16 +68,20 @@ class UserRepository(
         return result.scalars().one_or_none()
 
     @override
-    async def update(self, item_id: int, item_update: BaseModel) -> User | None:
-        """Not implemented."""
-        raise NotImplementedError
+    async def read_all(
+        self,
+        filters: UserFilterDM,
+        _relation_id: int | None = None,
+    ) -> Sequence[User]:
+        return await super().read_all(filters, -1)
 
     @classmethod
     @override
     async def _filter_query(
         cls,
         query: Select[tuple[User]],
-        filters: UserFilters,
+        filters: UserFilterDM,
+        _relation_id: int,
     ) -> Select[tuple[User]]:
         if (username := filters.username_contains) is not None:
             query = query.where(cls.model.username.ilike(f"%{username}%"))
@@ -60,7 +90,7 @@ class UserRepository(
         if hasattr(cls.model, filters.sort_by.removeprefix("-")):
             sort_attr = getattr(cls.model, filters.sort_by.removeprefix("-"))
         else:
-            raise QueryValueError(filters.sort_by.removeprefix("-"), "sort-by")
+            raise exc.QueryValueError(filters.sort_by.removeprefix("-"), "sort-by")
 
         sort_by = sort_attr.desc() if filters.sort_by.startswith("-") else sort_attr.asc()
         return query.order_by(sort_by).limit(filters.limit).offset(filters.offset)

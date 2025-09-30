@@ -1,63 +1,81 @@
 __all__ = (
     "AuthService",
-    "AuthServiceBase",
+    "BaseAuthService",
+    "BaseMovieService",
+    "BaseUserService",
     "MovieService",
-    "MovieServiceBase",
     "UserService",
-    "UserServiceBase",
 )
 
 from abc import ABC, abstractmethod
 from typing import Any, final, override
 
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+)
 
-from app.database import DbBase, DbUOW, SqlAlchemyDB, SqlAlchemyUOW, UOWBase
-from app.services.auth import AuthService, AuthServiceBase
-from app.services.base import DbServiceBase, ServiceBase, SqlAlchemyServiceBase
-from app.services.movie import MovieService, MovieServiceBase
-from app.services.user import UserService, UserServiceBase
+from app.database import (
+    BaseDatabaseHelper,
+    BaseUOW,
+    DbUOW,
+    SqlAlchemyDatabaseHelper,
+    SqlAlchemyUOW,
+)
+from app.services.auth import AuthService, BaseAuthService
+from app.services.base import BaseDatabaseService, BaseService, BaseSqlAlchemyService
+from app.services.movie import BaseMovieService, MovieService
+from app.services.user import BaseUserService, UserService
 
 
-class ServiceHelperBase[UOWType: UOWBase](ABC):
+class BaseServiceHelper[UOWType: BaseUOW](ABC):
     __slots__ = ("type_service",)
 
     type_uow: type[UOWType]
 
     @abstractmethod
-    async def service_getter(self) -> ServiceBase:
+    async def service_getter(self) -> BaseService:
         """Get an instance of the service.
 
         Returns
         -------
-        ServiceBase
+        BaseService
             service instance
         """
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def service(self) -> ServiceBase:
+    def service(self) -> BaseService:
         """Service.
 
         Returns
         -------
-        ServiceBase
+        BaseService
             service instance
         """
         raise NotImplementedError
 
 
-class DbServiceHelperBase[
+class BaseDatabaseServiceHelper[
     Engine,
     Session,
     SessionFactory,
-    Service: DbServiceBase[Any, Any, Any],
-](ServiceHelperBase[DbUOW[Engine, Session, SessionFactory]]):
+    Service: BaseDatabaseService[Any, Any, Any],
+](
+    BaseServiceHelper[
+        DbUOW[
+            Engine,
+            Session,
+            SessionFactory,
+        ]
+    ],
+):
     __slots__ = ("db",)
 
     type_uow: type[DbUOW[Engine, Session, SessionFactory]]
-    type_db: type[DbBase[Engine, Session, SessionFactory]]
+    type_db: type[BaseDatabaseHelper[Engine, Session, SessionFactory]]
 
     def __init__(self, type_service: type[Service]) -> None:
         """Initialize the database service helper.
@@ -81,8 +99,8 @@ class DbServiceHelperBase[
 
 
 @final
-class SqlAlchemyServiceHelper[Service: SqlAlchemyServiceBase](
-    DbServiceHelperBase[
+class SqlAlchemyServiceHelper[Service: BaseSqlAlchemyService](
+    BaseDatabaseServiceHelper[
         AsyncEngine,
         AsyncSession,
         async_sessionmaker[AsyncSession],
@@ -90,4 +108,4 @@ class SqlAlchemyServiceHelper[Service: SqlAlchemyServiceBase](
     ]
 ):
     type_uow = SqlAlchemyUOW
-    type_db = SqlAlchemyDB
+    type_db = SqlAlchemyDatabaseHelper

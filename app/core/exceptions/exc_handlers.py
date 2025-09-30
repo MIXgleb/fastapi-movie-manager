@@ -1,16 +1,42 @@
-from fastapi import HTTPException, Request, status
+from fastapi import (
+    HTTPException,
+    Request,
+    Response,
+    status,
+)
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import ORJSONResponse
 from loguru import logger
+from pydantic import BaseModel, Field
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.schemas import ProblemDetails, get_custom_errors, get_full_url_data
-
-_JSON_500_RESPONSE = JSONResponse(
-    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    content={"error": "Internal server error.", "message": "Please try again later."},
+from app.core.exceptions.errors import CustomValidationErrorSchema
+from app.core.exceptions.exc_helpers import (
+    DictUrlParams,
+    get_custom_error_descriptions,
+    get_full_url_params,
 )
+
+_JSON_500_RESPONSE = ORJSONResponse(
+    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    content={
+        "error": "Internal server error.",
+        "message": "Please try again later.",
+    },
+)
+
+
+class _CustomProblemDetailsSchema(BaseModel):
+    type: str = Field(
+        default="about:blank",
+        description="A URI reference that identifies the problem type",
+    )
+    title: str
+    status: int
+    detail: str
+    instance: DictUrlParams
+    errors: list[CustomValidationErrorSchema]
 
 
 def validation_exception_handler(request: Request, exc: Exception) -> Response:
@@ -27,12 +53,12 @@ def validation_exception_handler(request: Request, exc: Exception) -> Response:
     )
 
     if isinstance(exc, RequestValidationError):
-        problem_details = ProblemDetails(
+        problem_details = _CustomProblemDetailsSchema(
             title="Validation Error",
             status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="One or more validation errors occurred in the request.",
-            instance=get_full_url_data(request, exc),
-            errors=get_custom_errors(exc),
+            instance=get_full_url_params(request, exc),
+            errors=get_custom_error_descriptions(exc),
         )
         logger_validation_exc.bind(type="validation_exception").warning(
             "RequestValidationError: {exc_msg};\nRequest: {method} {path}",
@@ -40,7 +66,7 @@ def validation_exception_handler(request: Request, exc: Exception) -> Response:
             method=method,
             path=path,
         )
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             content=jsonable_encoder(problem_details),
             headers={"Content-Type": "application/problem+json"},
@@ -69,14 +95,17 @@ def http_exception_handler(request: Request, exc: Exception) -> Response:
     )
 
     if isinstance(exc, HTTPException):
-        logger_fastapi_exc.bind(type="http_exception", status_code=exc.status_code).warning(
+        logger_fastapi_exc.bind(
+            type="http_exception",
+            status_code=exc.status_code,
+        ).warning(
             "HTTPException {status_code}: {exc_msg};\nRequest: {method} {path}",
             status_code=exc.status_code,
             exc_msg=exc.detail,
             method=method,
             path=path,
         )
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=exc.status_code,
             content=jsonable_encoder({"error": exc.detail}),
         )

@@ -2,7 +2,6 @@ __all__ = (
     "AuthorizationError",
     "DatabaseSessionError",
     "InvalidTokenError",
-    "InvalidTokenTypeError",
     "QueryValueError",
     "ResourceNotFoundError",
     "ResourceOwnershipError",
@@ -17,11 +16,10 @@ __all__ = (
 )
 
 
-from app.core.exceptions.exc import (
+from app.core.exceptions.errors import (
     AuthorizationError,
     DatabaseSessionError,
     InvalidTokenError,
-    InvalidTokenTypeError,
     QueryValueError,
     ResourceNotFoundError,
     ResourceOwnershipError,

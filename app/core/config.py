@@ -1,9 +1,16 @@
 from datetime import timedelta
 from pathlib import Path
-from typing import Self
+from typing import Final, Self
 
 from loguru import logger
-from pydantic import BaseModel, Field, PostgresDsn, computed_field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    PostgresDsn,
+    computed_field,
+    field_validator,
+    model_validator,
+)
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,12 +19,20 @@ class _LoggerConfig(BaseModel):
     level: str = "INFO"
     path: str = "logs/{time:YYYY-MM-DD}/log.log"
     rotation: str = "00:00"
-    retention: str = "60 days"
+    retention: str = "30 days"
 
     @field_validator("level")
     @classmethod
     def validate_level(cls, level: str) -> str:
-        valid_levels = {"TRACE", "DEBUG", "INFO", "SUCCESS", "WARNING", "ERROR", "CRITICAL"}
+        valid_levels = {
+            "TRACE",
+            "DEBUG",
+            "INFO",
+            "SUCCESS",
+            "WARNING",
+            "ERROR",
+            "CRITICAL",
+        }
 
         if level.upper() not in valid_levels:
             exc_msg = f"Invalid log level. Must be one of: {valid_levels}"
@@ -31,6 +46,11 @@ class _LoggingConfig(BaseModel):
     common_file: _LoggerConfig
     error_file: _LoggerConfig
     json_file: _LoggerConfig
+
+    stream_log_handler: int | None = None
+    common_log_handler: int | None = None
+    error_log_handler: int | None = None
+    json_log_handler: int | None = None
 
     path_folder: Path = Field(
         default=Path("logs").resolve(),
@@ -49,31 +69,34 @@ class _LoggingConfig(BaseModel):
 
 
 class _TokenConfig(BaseModel):
-    secret_key: str
+    secret_jwt_key: str
+    secret_fernet_key: str
     algorithm: str
-    access_token_timedelta: timedelta = timedelta(minutes=1)
-    refresh_token_timedelta: timedelta = timedelta(minutes=5)
-    guest_token_timedelta: timedelta = timedelta(days=1)
+    access_token_ttl: timedelta = timedelta(minutes=1)
+    refresh_token_ttl: timedelta = timedelta(minutes=5)
 
     @computed_field
     @property
-    def access_token_expiration(self) -> int:
-        return int(self.access_token_timedelta.total_seconds())
+    def access_token_ttl_seconds(self) -> int:
+        return int(self.access_token_ttl.total_seconds())
 
     @computed_field
     @property
-    def refresh_token_expiration(self) -> int:
-        return int(self.refresh_token_timedelta.total_seconds())
-
-    @computed_field
-    @property
-    def guest_token_expiration(self) -> int:
-        return int(self.guest_token_timedelta.total_seconds())
+    def refresh_token_ttl_seconds(self) -> int:
+        return int(self.refresh_token_ttl.total_seconds())
 
 
 class _RedisConfig(BaseModel):
-    url: str
+    host: str
+    port: int
+    db_request_limiter: int
+    db_refresh_token: int
     encoding: str = "utf8"
+
+    @computed_field
+    @property
+    def url(self) -> str:
+        return f"redis://{self.host}:{self.port}"
 
 
 class _RunConfig(BaseModel):
@@ -86,16 +109,20 @@ class _ApiV1Prefix(BaseModel):
     auth: str = "/auth"
     users: str = "/users"
     movies: str = "/movies"
-    health: str = "/health"
 
 
 class _ApiPrefix(BaseModel):
     prefix: str = "/api"
+    health: str = "/health"
     v1: _ApiV1Prefix = _ApiV1Prefix()
 
 
 class _DatabaseConfig(BaseModel):
-    url: PostgresDsn
+    username: str
+    password: str
+    host: str
+    port: int
+    tablename: str
     echo: bool = False
     echo_pool: bool = False
     pool_size: int = 50
@@ -109,10 +136,19 @@ class _DatabaseConfig(BaseModel):
         "pk": "pk_%(table_name)s",
     }
 
+    @computed_field
+    @property
+    def url(self) -> PostgresDsn:
+        return PostgresDsn(
+            "postgresql+asyncpg://"
+            f"{self.username}:{self.password}@"
+            f"{self.host}:{self.port}/{self.tablename}"
+        )
+
 
 class _Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=(".env.template", ".env"),
+        env_file=".env",
         case_sensitive=False,
         env_nested_delimiter="__",
         env_prefix="APP_CONFIG__",
@@ -122,9 +158,11 @@ class _Settings(BaseSettings):
     db: _DatabaseConfig
     redis: _RedisConfig
     logging: _LoggingConfig
+    debug: bool
 
     run: _RunConfig = _RunConfig()
     api: _ApiPrefix = _ApiPrefix()
 
 
-settings = _Settings()  # type: ignore[reportCallIssue]
+settings: Final = _Settings()  # type: ignore[reportCallIssue]
+DEBUG: Final[bool] = settings.debug

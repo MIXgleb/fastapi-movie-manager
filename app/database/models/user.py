@@ -4,14 +4,21 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import String
 
 from app.database.models.base import Base
-from app.database.models.mixins.created_at import CreatedAtMixin
-from app.database.models.mixins.int_id_pk import IntIdPkMixin
-from app.schemas import USER_ROLES
+from app.database.models.mixins import (
+    CreatedAtMixin,
+    IntIdPkMixin,
+    UpdatedAtMixin,
+)
+from app.domains import TypeUserRole
 
 
 @final
-class User(IntIdPkMixin, CreatedAtMixin, Base):
+class User(IntIdPkMixin, CreatedAtMixin, UpdatedAtMixin, Base):
     username: Mapped[str] = mapped_column(String(15), unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(100), nullable=False)
-    role: Mapped[USER_ROLES] = mapped_column(String(10), nullable=False)
-    movies = relationship("Movie", back_populates="user", cascade="all, delete-orphan")
+    role: Mapped[TypeUserRole] = mapped_column(String(10), nullable=False)
+    movies = relationship(
+        argument="Movie",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )

@@ -1,14 +1,46 @@
 __all__ = (
-    "MessageDeleteMovieReturn",
-    "MessageDeleteUserReturn",
-    "MessageHealthCheckReturn",
-    "MessageLoginReturn",
-    "MessageRegisterReturn",
-    "MessageUpdateMovieReturn",
+    "DeleteMovieResponse",
+    "DeleteUserResponse",
+    "LoginResponse",
+    "LogoutResponse",
+    "MovieCreateDTO",
+    "MovieFilterDTO",
+    "MovieInputDTO",
+    "MovieOutputDTO",
+    "MovieUpdateDTO",
+    "RegisterResponse",
+    "UpdateMovieResponse",
+    "UpdateUserResponse",
+    "UserCreateDTO",
+    "UserFilterDTO",
+    "UserInputDTO",
+    "UserOutputDTO",
+    "UserUpdateDTO",
+    "UserUpdateWithHashedPasswordDTO",
 )
 
 
-from app.api.v1.schemas.auth import MessageLoginReturn, MessageRegisterReturn
-from app.api.v1.schemas.health import MessageHealthCheckReturn
-from app.api.v1.schemas.movie import MessageDeleteMovieReturn, MessageUpdateMovieReturn
-from app.api.v1.schemas.user import MessageDeleteUserReturn
+from app.api.v1.schemas.auth import (
+    LoginResponse,
+    LogoutResponse,
+    RegisterResponse,
+)
+from app.api.v1.schemas.movie import (
+    DeleteMovieResponse,
+    MovieCreateDTO,
+    MovieFilterDTO,
+    MovieInputDTO,
+    MovieOutputDTO,
+    MovieUpdateDTO,
+    UpdateMovieResponse,
+)
+from app.api.v1.schemas.user import (
+    DeleteUserResponse,
+    UpdateUserResponse,
+    UserCreateDTO,
+    UserFilterDTO,
+    UserInputDTO,
+    UserOutputDTO,
+    UserUpdateDTO,
+    UserUpdateWithHashedPasswordDTO,
+)

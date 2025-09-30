@@ -1,27 +1,41 @@
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+)
 
-from app.database import DbBase, DbUOW, UOWBase
+from app.database import BaseDatabaseHelper, BaseUOW, DbUOW
 
 
-class ServiceBase:
+class BaseService:
     __slots__ = ("uow",)
 
-    def __init__(self, type_uow: type[UOWBase]) -> None:
+    def __init__(self, type_uow: type[BaseUOW]) -> None:
         """Initialize the service.
 
         Parameters
         ----------
-        type_uow : type[UOWBase]
+        type_uow : type[BaseUOW]
             unit-of-work interface
         """
         self.uow = type_uow()
 
 
-class DbServiceBase[Engine, Session, SessionFactory](ServiceBase):
+class BaseDatabaseService[Engine, Session, SessionFactory](BaseService):
     def __init__(
         self,
-        type_uow: type[DbUOW[Engine, Session, SessionFactory]],
-        db: DbBase[Engine, Session, SessionFactory],
+        type_uow: type[
+            DbUOW[
+                Engine,
+                Session,
+                SessionFactory,
+            ]
+        ],
+        db: BaseDatabaseHelper[
+            Engine,
+            Session,
+            SessionFactory,
+        ],
     ) -> None:
         """Initialize the database service.
 
@@ -30,12 +44,16 @@ class DbServiceBase[Engine, Session, SessionFactory](ServiceBase):
         type_uow : type[DbUOW[Engine, Session, SessionFactory]]
             database unit-of-work interface
 
-        db : DbBase[Engine, Session, SessionFactory]
+        db : BaseDatabaseHelper[Engine, Session, SessionFactory]
             database helper instance
         """
         self.uow = type_uow(db)
 
 
-class SqlAlchemyServiceBase(
-    DbServiceBase[AsyncEngine, AsyncSession, async_sessionmaker[AsyncSession]]
+class BaseSqlAlchemyService(
+    BaseDatabaseService[
+        AsyncEngine,
+        AsyncSession,
+        async_sessionmaker[AsyncSession],
+    ],
 ): ...

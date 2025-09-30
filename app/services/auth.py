@@ -1,45 +1,89 @@
 from abc import abstractmethod
 from typing import final, override
 
-from fastapi import Response
+from fastapi import Request, Response
 
 import app.core.exceptions as exc
-from app.core.security import PasswordHelper, TokenHelper
-from app.database.models import User
-from app.schemas import Payload, Token, TokensCreate, UserCreate, UserInput
-from app.services.base import ServiceBase, SqlAlchemyServiceBase
+from app.api.v1.schemas import UserCreateDTO, UserInputDTO
+from app.core.security import (
+    PasswordHelper,
+    Payload,
+    TokenHelper,
+)
+from app.domains import UserRole
+from app.services.base import BaseService, BaseSqlAlchemyService
 
 
-class AuthServiceBase(ServiceBase):
+class BaseAuthService(BaseService):
     @abstractmethod
-    async def login(self, user_input: UserInput, response: Response) -> None:
+    async def login(
+        self,
+        user_input: UserInputDTO,
+        request: Request,
+    ) -> None:
         """Log in to the account.
 
         Parameters
         ----------
-        user_input : UserInput
+        user_input : UserInputDTO
             user credentials
 
-        response : Response
-            response to the client
+        request : Request
+            request to the endpoint
+
+        Raises
+        ------
+        AuthorizationError
+            user not found
+
+        AuthorizationError
+            incorrect password
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def register(self, user_input: UserInput) -> None:
+    async def register(self, user_input: UserInputDTO) -> None:
         """Register a new user.
 
         Parameters
         ----------
-        user_input : UserInput
-            user credentials
+        user_input : UserInputDTO
+            user data
+
+        Raises
+        ------
+        UserExistsError
+            user already exists
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def logout(
+        self,
+        request: Request,
+        response: Response,
+    ) -> None:
+        """Log out of the account.
+
+        Parameters
+        ----------
+        request : Request
+            request to the endpoint
+
+        response : Response
+            response from the endpoint
         """
         raise NotImplementedError
 
 
 @final
-class AuthService(SqlAlchemyServiceBase, AuthServiceBase):
-    async def _check_user(self, user_input: UserInput) -> User:
+class AuthService(BaseSqlAlchemyService, BaseAuthService):
+    @override
+    async def login(
+        self,
+        user_input: UserInputDTO,
+        request: Request,
+    ) -> None:
         async with self.uow as uow:
             user = await uow.users.read_by_name(user_input.username)
 
@@ -51,46 +95,38 @@ class AuthService(SqlAlchemyServiceBase, AuthServiceBase):
                 exc_msg = "Authorization failed."
                 raise exc.AuthorizationError(exc_msg)
 
-            return user
+            payload = Payload(
+                user_id=user.id,
+                user_role=user.role,
+            )
+            await TokenHelper.generate_tokens(
+                payload=payload,
+                request=request,
+            )
 
     @override
-    async def login(self, user_input: UserInput, response: Response) -> None:
-        user = await self._check_user(user_input)
-
-        access_token = TokenHelper.create(
-            Payload(user_id=user.id, user_role=user.role, token_type=Token.access_token)
+    async def register(self, user_input: UserInputDTO) -> None:
+        user_create = UserCreateDTO(
+            username=user_input.username,
+            hashed_password=PasswordHelper.hash(user_input.password),
+            role=UserRole.user,
         )
-        refresh_token = TokenHelper.create(
-            Payload(user_id=user.id, user_role=user.role, token_type=Token.refresh_token)
-        )
-        tokens = TokensCreate(access_token=access_token, refresh_token=refresh_token)
-        TokenHelper.install(tokens, response)
 
-    @override
-    async def register(self, user_input: UserInput) -> None:
-        """Register a new user.
-
-        Parameters
-        ----------
-        user_input : UserInput
-            user credentials
-
-        Raises
-        ------
-        UserExistsError
-            user already exists
-        """
         async with self.uow as uow:
-            user = await uow.users.read_by_name(user_input.username)
+            user = await uow.users.read_by_name(user_create.username)
 
             if user is not None:
                 raise exc.UserExistsError
 
-            user_create = UserCreate(
-                username=user_input.username,
-                hashed_password=PasswordHelper.hash(user_input.password),
-                role="user",
-            )
+            await uow.users.create(user_create.model_dump())
 
-            await uow.users.create(user_create)
-            await uow.commit()
+    @override
+    async def logout(
+        self,
+        request: Request,
+        response: Response,
+    ) -> None:
+        await TokenHelper.clear_tokens(
+            request=request,
+            response=response,
+        )

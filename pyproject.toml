@@ -11,13 +11,15 @@ authors = [
 dependencies = [
     "alembic>=1.16.5",
     "asyncpg>=0.30.0",
+    "cryptography>=46.0.2",
     "fastapi-limiter>=0.1.6",
     "fastapi[standard]>=0.116.2",
     "loguru>=0.7.3",
-    "passlib>=1.7.4",
+    "orjson>=3.11.3",
+    "passlib[bcrypt]>=1.7.4",
     "pydantic-settings>=2.10.1",
     "pyjwt>=2.10.1",
-    "redis>=6.4.0",
+    "redis[hiredis]>=6.4.0",
     "sqlalchemy>=2.0.43",
 ]
 
@@ -36,7 +38,7 @@ test = [
 
 [tool.ruff]
 # Ruff config: https://docs.astral.sh/ruff/settings
-line-length = 100
+line-length = 95
 target-version = "py313"
 extend-exclude = [
     "alembic/",
@@ -58,7 +60,7 @@ ignore = [
     "COM812",   # missing trailing comma (due to ruff conflict)
     "CPY001",   # copyright notice
     "D100",     # docstring in public module
-    "D101",     # Missing docstring in public class
+    "D101",     # docstring in public class
     "D104",     # docstring in public package
 ]
 
@@ -69,20 +71,18 @@ allow-dunder-method-names = ["__tablename__"]
 convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
-"app/api/v1/routers/*.py" = [
-    "ANN201",   # Missing return type annotation for public function
-]
-"app/database/models/mixins/*.py" = [
+"app/core/loggers/*.py" = [
     "D103",     # Missing docstring in public function
 ]
-"app/core/loggers.py" = [
-    "D103",     # Missing docstring in public function
-]
-"app/core/exceptions/exc.py" = [
+"app/core/exceptions/errors.py" = [
     "D107",     # Missing docstring in `__init__`
 ]
 "app/core/exceptions/exc_handlers.py" = [
     "D103",     # Missing docstring in public function
+]
+"app/database/models/mixins/*.py" = [
+    "D102",     # Missing docstring in public method
+    "PLR6301",  # Method could be a function, class method, or static method
 ]
 
 [tool.pytest.ini_options]

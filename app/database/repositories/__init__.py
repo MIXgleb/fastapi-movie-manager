@@ -1,9 +1,9 @@
 __all__ = (
+    "BaseMovieRepository",
+    "BaseUserRepository",
     "MovieRepository",
-    "MovieRepositoryBase",
     "UserRepository",
-    "UserRepositoryBase",
 )
 
-from app.database.repositories.movie import MovieRepository, MovieRepositoryBase
-from app.database.repositories.user import UserRepository, UserRepositoryBase
+from app.database.repositories.movie import BaseMovieRepository, MovieRepository
+from app.database.repositories.user import BaseUserRepository, UserRepository
