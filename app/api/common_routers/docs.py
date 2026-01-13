@@ -31,11 +31,13 @@ async def _check_mode() -> None:  # noqa: RUF029
 
 router = APIRouter(
     include_in_schema=False,
-    dependencies=[Depends(_check_mode)],
+    dependencies=[
+        Depends(_check_mode),
+    ],
 )
 
 
-@router.get("/docs")
+@router.get(path="/docs")
 async def call_docs() -> HTMLResponse:
     """Generate and return the HTML that loads Swagger UI for the interactive API docs.
 
@@ -50,7 +52,7 @@ async def call_docs() -> HTMLResponse:
     )
 
 
-@router.get("/docs/oauth2-redirect")
+@router.get(path="/docs/oauth2-redirect")
 async def call_docs_oauth2_redirect() -> HTMLResponse:
     """Generate the HTML response with the OAuth2 redirection for Swagger UI.
 
@@ -62,7 +64,7 @@ async def call_docs_oauth2_redirect() -> HTMLResponse:
     return get_swagger_ui_oauth2_redirect_html()
 
 
-@router.get("/redoc")
+@router.get(path="/redoc")
 async def call_redoc() -> HTMLResponse:
     """Generate and return the HTML response that loads ReDoc for the alternative API docs.
 
@@ -77,14 +79,16 @@ async def call_redoc() -> HTMLResponse:
     )
 
 
-@router.get("/openapi.json")
-async def call_openapi(request: Request) -> Response:
+@router.get(path="/openapi.json")
+async def call_openapi(
+    request: Request,
+) -> Response:
     """Generate and return the OpenAPI json.
 
     Parameters
     ----------
     request : Request
-        request to the endpoint
+        request from the client
 
     Returns
     -------

@@ -4,13 +4,16 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
 )
 
-from app.database import BaseDatabaseHelper, BaseUOW, DbUOW
+from app.database import BaseDatabaseHelper, BaseDatabaseUOW, BaseUOW
 
 
 class BaseService:
     __slots__ = ("uow",)
 
-    def __init__(self, type_uow: type[BaseUOW]) -> None:
+    def __init__(
+        self,
+        type_uow: type[BaseUOW],
+    ) -> None:
         """Initialize the service.
 
         Parameters
@@ -21,11 +24,15 @@ class BaseService:
         self.uow = type_uow()
 
 
-class BaseDatabaseService[Engine, Session, SessionFactory](BaseService):
+class BaseDatabaseService[
+    Engine,
+    Session,
+    SessionFactory,
+](BaseService):
     def __init__(
         self,
         type_uow: type[
-            DbUOW[
+            BaseDatabaseUOW[
                 Engine,
                 Session,
                 SessionFactory,
@@ -41,10 +48,10 @@ class BaseDatabaseService[Engine, Session, SessionFactory](BaseService):
 
         Parameters
         ----------
-        type_uow : type[DbUOW[Engine, Session, SessionFactory]]
+        type_uow : type[BaseDatabaseUOW]
             database unit-of-work interface
 
-        db : BaseDatabaseHelper[Engine, Session, SessionFactory]
+        db : BaseDatabaseHelper
             database helper instance
         """
         self.uow = type_uow(db)

@@ -4,8 +4,8 @@ from fastapi import Depends, params
 
 import app.core.exceptions as exc
 from app.api.v1.dependencies.base import BaseDependency
-from app.core.security import PayloadFromToken
 from app.domains import TypeUserRole, UserRole
+from app.security import PayloadFromToken
 
 
 @final
@@ -14,7 +14,10 @@ class _PermissionChecker(BaseDependency):
 
     __slots__ = ("roles",)
 
-    def __init__(self, *roles: TypeUserRole) -> None:
+    def __init__(
+        self,
+        *roles: TypeUserRole,
+    ) -> None:
         """Initialize access verification.
 
         Parameters
@@ -25,7 +28,10 @@ class _PermissionChecker(BaseDependency):
         self.roles = set(roles) | {UserRole.admin}
 
     @override
-    async def __call__(self, payload: PayloadFromToken) -> None:
+    async def __call__(
+        self,
+        payload: PayloadFromToken,
+    ) -> None:
         """Check the user's permissions.
 
         Parameters
@@ -42,7 +48,9 @@ class _PermissionChecker(BaseDependency):
             raise exc.UserPermissionError
 
 
-def dep_permission_getter(*roles: TypeUserRole) -> params.Depends:
+def dep_permission_getter(
+    *roles: TypeUserRole,
+) -> params.Depends:
     """Get dependencies on permissions by roles.
 
     Parameters

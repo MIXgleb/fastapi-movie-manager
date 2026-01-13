@@ -16,7 +16,7 @@ from app.api.v1.schemas import (
     RegisterResponse,
     UserInputDTO,
 )
-from app.core.config import settings
+from app.core import settings
 from app.services import (
     AuthService,
     BaseAuthService,
@@ -36,7 +36,7 @@ AuthServiceType = Annotated[
 UserFromBody = Annotated[UserInputDTO, Body()]
 
 
-@router.post("/login")
+@router.post(path="/login")
 async def login(
     auth_service: AuthServiceType,
     user_input: UserFromBody,
@@ -53,7 +53,7 @@ async def login(
         user credentials
 
     request : Request
-        request to the endpoint
+        request from the client
 
     Returns
     -------
@@ -64,7 +64,7 @@ async def login(
     return LoginResponse()
 
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post(path="/register", status_code=status.HTTP_201_CREATED)
 async def register(
     auth_service: AuthServiceType,
     user_input: UserFromBody,
@@ -88,7 +88,7 @@ async def register(
     return RegisterResponse()
 
 
-@router.get("/logout")
+@router.get(path="/logout")
 async def logout(
     auth_service: AuthServiceType,
     request: Request,
@@ -102,10 +102,10 @@ async def logout(
         auth service
 
     request : Request
-        request to the endpoint
+        request from the client
 
     response : Response
-        response from the endpoint
+        response to the client
 
     Returns
     -------

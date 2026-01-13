@@ -13,10 +13,25 @@ from app.domains import TypeUserRole
 
 
 @final
-class User(IntIdPkMixin, CreatedAtMixin, UpdatedAtMixin, Base):
-    username: Mapped[str] = mapped_column(String(15), unique=True, nullable=False)
-    hashed_password: Mapped[str] = mapped_column(String(100), nullable=False)
-    role: Mapped[TypeUserRole] = mapped_column(String(10), nullable=False)
+class User(
+    IntIdPkMixin,
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    Base,
+):
+    username: Mapped[str] = mapped_column(
+        String(15),
+        unique=True,
+        nullable=False,
+    )
+    hashed_password: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+    role: Mapped[TypeUserRole] = mapped_column(
+        String(10),
+        nullable=False,
+    )
     movies = relationship(
         argument="Movie",
         back_populates="user",

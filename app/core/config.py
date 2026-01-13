@@ -1,15 +1,11 @@
 from datetime import timedelta
-from pathlib import Path
-from typing import Final, Self
+from typing import Final
 
-from loguru import logger
 from pydantic import (
     BaseModel,
-    Field,
     PostgresDsn,
     computed_field,
     field_validator,
-    model_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -23,7 +19,10 @@ class _LoggerConfig(BaseModel):
 
     @field_validator("level")
     @classmethod
-    def validate_level(cls, level: str) -> str:
+    def validate_level(
+        cls,
+        level: str,
+    ) -> str:
         valid_levels = {
             "TRACE",
             "DEBUG",
@@ -42,6 +41,8 @@ class _LoggerConfig(BaseModel):
 
 
 class _LoggingConfig(BaseModel):
+    log_folder: str = "logs"
+
     stream: _LoggerConfig
     common_file: _LoggerConfig
     error_file: _LoggerConfig
@@ -52,28 +53,13 @@ class _LoggingConfig(BaseModel):
     error_log_handler: int | None = None
     json_log_handler: int | None = None
 
-    path_folder: Path = Field(
-        default=Path("logs").resolve(),
-        description="The path to the logs folder.",
-    )
-
-    @model_validator(mode="after")
-    def create_log_folder(self) -> Self:
-        self.path_folder.mkdir(exist_ok=True, parents=True)
-        return self
-
-    @model_validator(mode="after")
-    def remove_existing_logger(self) -> Self:
-        logger.remove()
-        return self
-
 
 class _TokenConfig(BaseModel):
     secret_jwt_key: str
     secret_fernet_key: str
     algorithm: str
-    access_token_ttl: timedelta = timedelta(minutes=1)
-    refresh_token_ttl: timedelta = timedelta(minutes=5)
+    access_token_ttl: timedelta = timedelta(hours=12)
+    refresh_token_ttl: timedelta = timedelta(days=7)
 
     @computed_field
     @property
@@ -165,4 +151,3 @@ class _Settings(BaseSettings):
 
 
 settings: Final = _Settings()  # type: ignore[reportCallIssue]
-DEBUG: Final[bool] = settings.debug

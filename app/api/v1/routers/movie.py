@@ -24,9 +24,9 @@ from app.api.v1.schemas import (
     MovieUpdateDTO,
     UpdateMovieResponse,
 )
-from app.core.config import settings
-from app.core.security import PayloadFromToken
+from app.core import settings
 from app.domains import UserRole
+from app.security import PayloadFromToken
 from app.services import (
     BaseMovieService,
     MovieService,
@@ -51,9 +51,11 @@ MovieUpdateFromBody = Annotated[MovieUpdateDTO, Body()]
 
 
 @router.post(
-    "/new",
+    path="/new",
     status_code=status.HTTP_201_CREATED,
-    dependencies=[dep_permission_getter(UserRole.admin, UserRole.user)],
+    dependencies=[
+        dep_permission_getter(UserRole.admin, UserRole.user),
+    ],
 )
 async def create_movie(
     movie_service: MovieServiceType,
@@ -83,8 +85,10 @@ async def create_movie(
 
 
 @router.get(
-    "/all",
-    dependencies=[dep_permission_getter(UserRole.admin, UserRole.user)],
+    path="/all",
+    dependencies=[
+        dep_permission_getter(UserRole.admin, UserRole.user),
+    ],
 )
 async def get_all_movies(
     movie_service: MovieServiceType,
@@ -113,8 +117,10 @@ async def get_all_movies(
 
 
 @router.get(
-    "/{movie_id}",
-    dependencies=[MovieOwnership],
+    path="/{movie_id}",
+    dependencies=[
+        MovieOwnership,
+    ],
 )
 async def get_movie(
     movie_service: MovieServiceType,
@@ -139,7 +145,7 @@ async def get_movie(
 
 
 @router.put(
-    "/{movie_id}",
+    path="/{movie_id}",
     dependencies=[
         dep_permission_getter(UserRole.admin, UserRole.user),
         MovieOwnership,
@@ -176,7 +182,7 @@ async def update_movie(
 
 
 @router.delete(
-    "/{movie_id}",
+    path="/{movie_id}",
     dependencies=[
         dep_permission_getter(UserRole.admin, UserRole.user),
         MovieOwnership,

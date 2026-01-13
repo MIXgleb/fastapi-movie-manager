@@ -17,7 +17,10 @@ MSG_MOVIE_NOT_FOUND: Final[str] = "Movie not found."
 
 class BaseMovieService(BaseService):
     @abstractmethod
-    async def create_movie(self, movie_create: MovieCreateDTO) -> MovieOutputDTO:
+    async def create_movie(
+        self,
+        movie_create: MovieCreateDTO,
+    ) -> MovieOutputDTO:
         """Create a new movie.
 
         Parameters
@@ -56,7 +59,10 @@ class BaseMovieService(BaseService):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_movie(self, movie_id: int) -> MovieOutputDTO:
+    async def get_movie(
+        self,
+        movie_id: int,
+    ) -> MovieOutputDTO:
         """Get the movie by id.
 
         Parameters
@@ -105,7 +111,10 @@ class BaseMovieService(BaseService):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete_movie(self, movie_id: int) -> MovieOutputDTO:
+    async def delete_movie(
+        self,
+        movie_id: int,
+    ) -> MovieOutputDTO:
         """Delete the movie by id.
 
         Parameters
@@ -129,7 +138,10 @@ class BaseMovieService(BaseService):
 @final
 class MovieService(BaseSqlAlchemyService, BaseMovieService):
     @override
-    async def create_movie(self, movie_create: MovieCreateDTO) -> MovieOutputDTO:
+    async def create_movie(
+        self,
+        movie_create: MovieCreateDTO,
+    ) -> MovieOutputDTO:
         async with self.uow as uow:
             movie = await uow.movies.create(movie_create.model_dump())
             return MovieOutputDTO.model_validate(movie)
@@ -150,7 +162,10 @@ class MovieService(BaseSqlAlchemyService, BaseMovieService):
             return [MovieOutputDTO.model_validate(movie) for movie in movies]
 
     @override
-    async def get_movie(self, movie_id: int) -> MovieOutputDTO:
+    async def get_movie(
+        self,
+        movie_id: int,
+    ) -> MovieOutputDTO:
         async with self.uow as uow:
             movie = await uow.movies.read(movie_id)
 
@@ -177,7 +192,10 @@ class MovieService(BaseSqlAlchemyService, BaseMovieService):
             return MovieOutputDTO.model_validate(movie)
 
     @override
-    async def delete_movie(self, movie_id: int) -> MovieOutputDTO:
+    async def delete_movie(
+        self,
+        movie_id: int,
+    ) -> MovieOutputDTO:
         async with self.uow as uow:
             movie = await uow.movies.delete(movie_id)
 

@@ -5,12 +5,12 @@ from fastapi import Request, Response
 
 import app.core.exceptions as exc
 from app.api.v1.schemas import UserCreateDTO, UserInputDTO
-from app.core.security import (
+from app.domains import UserRole
+from app.security import (
     PasswordHelper,
     Payload,
     TokenHelper,
 )
-from app.domains import UserRole
 from app.services.base import BaseService, BaseSqlAlchemyService
 
 
@@ -29,7 +29,7 @@ class BaseAuthService(BaseService):
             user credentials
 
         request : Request
-            request to the endpoint
+            request from the client
 
         Raises
         ------
@@ -42,7 +42,10 @@ class BaseAuthService(BaseService):
         raise NotImplementedError
 
     @abstractmethod
-    async def register(self, user_input: UserInputDTO) -> None:
+    async def register(
+        self,
+        user_input: UserInputDTO,
+    ) -> None:
         """Register a new user.
 
         Parameters
@@ -68,10 +71,10 @@ class BaseAuthService(BaseService):
         Parameters
         ----------
         request : Request
-            request to the endpoint
+            request from the client
 
         response : Response
-            response from the endpoint
+            response to the client
         """
         raise NotImplementedError
 
@@ -105,7 +108,10 @@ class AuthService(BaseSqlAlchemyService, BaseAuthService):
             )
 
     @override
-    async def register(self, user_input: UserInputDTO) -> None:
+    async def register(
+        self,
+        user_input: UserInputDTO,
+    ) -> None:
         user_create = UserCreateDTO(
             username=user_input.username,
             hashed_password=PasswordHelper.hash(user_input.password),

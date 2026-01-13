@@ -1,10 +1,10 @@
 __all__ = (
     "BaseDatabaseHelper",
+    "BaseDatabaseUOW",
     "BaseUOW",
-    "DbUOW",
     "SqlAlchemyDatabaseHelper",
     "SqlAlchemyUOW",
 )
 
 from app.database.db_helpers import BaseDatabaseHelper, SqlAlchemyDatabaseHelper
-from app.database.unitofwork import BaseUOW, DbUOW, SqlAlchemyUOW
+from app.database.unit_of_works import BaseDatabaseUOW, BaseUOW, SqlAlchemyUOW

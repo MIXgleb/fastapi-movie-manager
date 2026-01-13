@@ -9,8 +9,8 @@ from fastapi import (
 
 import app.core.exceptions as exc
 from app.api.v1.dependencies.base import BaseDependency
-from app.core.security import PayloadFromToken
 from app.domains import UserRole
+from app.security import PayloadFromToken
 from app.services import MovieService, SqlAlchemyServiceHelper
 
 UserIdFromPath = Annotated[int, Path()]
@@ -38,7 +38,7 @@ class _UserOwnershipChecker(BaseDependency):
             payload data
 
         request : Request
-            request to the endpoint
+            request from the client
 
         Raises
         ------
@@ -69,7 +69,10 @@ class _MovieOwnershipChecker(BaseDependency):
 
     __slots__ = ("service_helper",)
 
-    def __init__(self, service_helper: SqlAlchemyServiceHelper[MovieService]) -> None:
+    def __init__(
+        self,
+        service_helper: SqlAlchemyServiceHelper[MovieService],
+    ) -> None:
         """Initialize resource ownership verification.
 
         Parameters
@@ -97,7 +100,7 @@ class _MovieOwnershipChecker(BaseDependency):
             payload data
 
         request : Request
-            request to the endpoint
+            request from the client
 
         Raises
         ------

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import Any, override
+from typing import Any, final, override
 
 from sqlalchemy import Select, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,9 +11,15 @@ from app.domains import DataclassType
 type TypeDictAnyAny = dict[Any, Any]
 
 
-class BaseDatabaseRepository[Model, Filter](ABC):
+class BaseDatabaseRepository[
+    Model,
+    Filter,
+](ABC):
     @abstractmethod
-    async def create(self, item_create: TypeDictAnyAny) -> Model:
+    async def create(
+        self,
+        item_create: TypeDictAnyAny,
+    ) -> Model:
         """Create a new item.
 
         Parameters
@@ -29,7 +35,10 @@ class BaseDatabaseRepository[Model, Filter](ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def read(self, item_id: int) -> Model | None:
+    async def read(
+        self,
+        item_id: int,
+    ) -> Model | None:
         """Read the item by id.
 
         Parameters
@@ -45,7 +54,11 @@ class BaseDatabaseRepository[Model, Filter](ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def update(self, item_id: int, item_update: TypeDictAnyAny) -> Model | None:
+    async def update(
+        self,
+        item_id: int,
+        item_update: TypeDictAnyAny,
+    ) -> Model | None:
         """Update the item by id.
 
         Parameters
@@ -64,7 +77,10 @@ class BaseDatabaseRepository[Model, Filter](ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete(self, item_id: int) -> Model | None:
+    async def delete(
+        self,
+        item_id: int,
+    ) -> Model | None:
         """Delete the item by id.
 
         Parameters
@@ -112,13 +128,19 @@ class BaseSqlAlchemyRepository[
     Model: DeclarativeBase,
     Filter: DataclassType,
 ](
-    BaseDatabaseRepository[Model, Filter],
+    BaseDatabaseRepository[
+        Model,
+        Filter,
+    ],
 ):
     __slots__ = ("session",)
 
     model: type[Model]
 
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(
+        self,
+        session: AsyncSession,
+    ) -> None:
         """Initialize the sqlalchemy repository.
 
         Parameters
@@ -128,19 +150,32 @@ class BaseSqlAlchemyRepository[
         """
         self.session = session
 
+    @final
     @override
-    async def create(self, item_create: TypeDictAnyAny) -> Model:
+    async def create(
+        self,
+        item_create: TypeDictAnyAny,
+    ) -> Model:
         new_item = self.model(**item_create)
         self.session.add(new_item)
         await self.session.flush()
         return new_item
 
+    @final
     @override
-    async def read(self, item_id: int) -> Model | None:
+    async def read(
+        self,
+        item_id: int,
+    ) -> Model | None:
         return await self.session.get(self.model, item_id)
 
+    @final
     @override
-    async def update(self, item_id: int, item_update: TypeDictAnyAny) -> Model | None:
+    async def update(
+        self,
+        item_id: int,
+        item_update: TypeDictAnyAny,
+    ) -> Model | None:
         item = await self.read(item_id)
 
         if item is None:
@@ -152,8 +187,12 @@ class BaseSqlAlchemyRepository[
         await self.session.flush()
         return item
 
+    @final
     @override
-    async def delete(self, item_id: int) -> Model | None:
+    async def delete(
+        self,
+        item_id: int,
+    ) -> Model | None:
         item = await self.read(item_id)
 
         if item is None:

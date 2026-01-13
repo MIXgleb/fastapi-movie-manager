@@ -13,9 +13,29 @@ from app.database.models.mixins import (
 
 
 @final
-class Movie(IntIdPkMixin, CreatedAtMixin, UpdatedAtMixin, Base):
-    title: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
-    description: Mapped[str] = mapped_column(String(100), nullable=False)
-    rate: Mapped[float] = mapped_column(Float(), nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    user = relationship("User", back_populates="movies")
+class Movie(
+    IntIdPkMixin,
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    Base,
+):
+    title: Mapped[str] = mapped_column(
+        String(50),
+        unique=True,
+        nullable=False,
+    )
+    description: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+    rate: Mapped[float] = mapped_column(
+        Float(),
+        nullable=False,
+    )
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"),
+    )
+    user = relationship(
+        argument="User",
+        back_populates="movies",
+    )

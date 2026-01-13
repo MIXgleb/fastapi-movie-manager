@@ -1,7 +1,9 @@
+from typing import final
+
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase, declared_attr
 
-from app.core.config import settings
+from app.core import settings
 
 
 class Base(DeclarativeBase):
@@ -9,6 +11,7 @@ class Base(DeclarativeBase):
 
     metadata = MetaData(naming_convention=settings.db.naming_convention)
 
+    @final
     @declared_attr.directive
     @classmethod
     def __tablename__(cls) -> str:

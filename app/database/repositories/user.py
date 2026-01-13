@@ -14,10 +14,16 @@ from app.domains import UserFilterDM
 
 
 class BaseUserRepository(
-    BaseDatabaseRepository[User, UserFilterDM],
+    BaseDatabaseRepository[
+        User,
+        UserFilterDM,
+    ],
 ):
     @abstractmethod
-    async def read_by_name(self, username: str) -> User | None:
+    async def read_by_name(
+        self,
+        username: str,
+    ) -> User | None:
         """Read the user by username.
 
         Parameters
@@ -56,13 +62,19 @@ class BaseUserRepository(
 
 @final
 class UserRepository(
-    BaseSqlAlchemyRepository[User, UserFilterDM],
+    BaseSqlAlchemyRepository[
+        User,
+        UserFilterDM,
+    ],
     BaseUserRepository,
 ):
     model = User
 
     @override
-    async def read_by_name(self, username: str) -> User | None:
+    async def read_by_name(
+        self,
+        username: str,
+    ) -> User | None:
         query = select(self.model).where(self.model.username == username)
         result = await self.session.execute(query)
         return result.scalars().one_or_none()
@@ -93,4 +105,5 @@ class UserRepository(
             raise exc.QueryValueError(filters.sort_by.removeprefix("-"), "sort-by")
 
         sort_by = sort_attr.desc() if filters.sort_by.startswith("-") else sort_attr.asc()
+
         return query.order_by(sort_by).limit(filters.limit).offset(filters.offset)

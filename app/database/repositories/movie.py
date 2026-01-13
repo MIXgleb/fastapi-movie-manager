@@ -14,7 +14,10 @@ from app.domains import MovieFilterDM
 
 
 class BaseMovieRepository(
-    BaseDatabaseRepository[Movie, MovieFilterDM],
+    BaseDatabaseRepository[
+        Movie,
+        MovieFilterDM,
+    ],
 ):
     @override
     @abstractmethod
@@ -28,7 +31,10 @@ class BaseMovieRepository(
 
 @final
 class MovieRepository(
-    BaseSqlAlchemyRepository[Movie, MovieFilterDM],
+    BaseSqlAlchemyRepository[
+        Movie,
+        MovieFilterDM,
+    ],
     BaseMovieRepository,
 ):
     model = Movie
@@ -59,6 +65,7 @@ class MovieRepository(
             raise exc.QueryValueError(filters.sort_by.removeprefix("-"), "sort-by")
 
         sort_by = sort_attr.desc() if filters.sort_by.startswith("-") else sort_attr.asc()
+
         return (
             query
             .where(cls.model.rate.between(filters.rate_from, filters.rate_to))

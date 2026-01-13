@@ -4,6 +4,8 @@ from typing import Never
 from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column, validates
 
+from app.core.exceptions import ImmutableValueError
+
 
 def get_current_dt() -> datetime:
     """Get the current UTC datetime.
@@ -24,9 +26,12 @@ class CreatedAtMixin:
     )
 
     @validates("created_at")
-    def validate_created_at_field(self, field: str, _: int) -> Never:
-        exc_msg = f"Field {field} is immutable and cannot be modified."
-        raise ValueError(exc_msg)
+    def validate_created_at_field(
+        self,
+        field: str,
+        _: int,
+    ) -> Never:
+        raise ImmutableValueError(field)
 
 
 class UpdatedAtMixin:
@@ -37,6 +42,9 @@ class UpdatedAtMixin:
     )
 
     @validates("updated_at")
-    def validate_updated_at_field(self, field: str, _: int) -> Never:
-        exc_msg = f"Field {field} is immutable and cannot be modified."
-        raise ValueError(exc_msg)
+    def validate_updated_at_field(
+        self,
+        field: str,
+        _: int,
+    ) -> Never:
+        raise ImmutableValueError(field)

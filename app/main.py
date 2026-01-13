@@ -10,14 +10,14 @@ from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api import router as api_router
-from app.core.config import settings
+from app.core import settings
 from app.core.exceptions import (
     database_exception_handler,
     global_exception_handler,
     http_exception_handler,
     validation_exception_handler,
 )
-from app.core.loggers import setup_logger
+from app.core.logging import setup_logger
 from app.core.middlewares import (
     AuthMiddleware,
     CORSMiddleware,
@@ -37,11 +37,12 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
 
     Returns
     -------
-    AsyncGenerator[None]
+    AsyncGenerator
         open before launching, close before completion
     """  # noqa: DOC202
-    setup_logger()
     logger.info("🚀 Application starting up...")
+
+    setup_logger()
 
     logger.info("Connecting to redis...")
     redis_connection = redis.Redis(

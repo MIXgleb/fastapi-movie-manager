@@ -1,4 +1,9 @@
-__all__ = ("DEBUG",)
+__all__ = (
+    "DEBUG",
+    "settings",
+)
 
 
-from app.core.config import DEBUG
+from app.core.config import settings
+
+DEBUG = settings.debug

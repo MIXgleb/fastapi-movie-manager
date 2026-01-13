@@ -25,9 +25,9 @@ from app.api.v1.schemas import (
     UserOutputDTO,
     UserUpdateDTO,
 )
-from app.core.config import settings
-from app.core.security import PayloadFromToken
+from app.core import settings
 from app.domains import UserRole
+from app.security import PayloadFromToken
 from app.services import (
     BaseUserService,
     SqlAlchemyServiceHelper,
@@ -49,7 +49,7 @@ UserFilterFromQuery = Annotated[UserFilterDTO, Query()]
 UserUpdateFromBody = Annotated[UserUpdateDTO, Body()]
 
 
-@router.get("/me")
+@router.get(path="/me")
 async def get_me(
     payload: PayloadFromToken,
     request: Request,
@@ -62,7 +62,7 @@ async def get_me(
         payload data
 
     request : Request
-        request to the endpoint
+        request from the client
 
     Returns
     -------
@@ -75,7 +75,7 @@ async def get_me(
     )
 
 
-@router.put("/me")
+@router.put(path="/me")
 async def update_me(
     payload: PayloadFromToken,
     request: Request,
@@ -88,7 +88,7 @@ async def update_me(
         payload data
 
     request : Request
-        request to the endpoint
+        request from the client
 
     Returns
     -------
@@ -101,7 +101,7 @@ async def update_me(
     )
 
 
-@router.delete("/me")
+@router.delete(path="/me")
 async def delete_me(
     payload: PayloadFromToken,
     request: Request,
@@ -114,7 +114,7 @@ async def delete_me(
         payload data
 
     request : Request
-        request to the endpoint
+        request from the client
 
     Returns
     -------
@@ -128,8 +128,10 @@ async def delete_me(
 
 
 @router.get(
-    "/all",
-    dependencies=[dep_permission_getter(UserRole.admin)],
+    path="/all",
+    dependencies=[
+        dep_permission_getter(UserRole.admin),
+    ],
 )
 async def get_all_users(
     user_service: UserServiceType,
@@ -154,8 +156,10 @@ async def get_all_users(
 
 
 @router.get(
-    "/{user_id}",
-    dependencies=[UserOwnership],
+    path="/{user_id}",
+    dependencies=[
+        UserOwnership,
+    ],
 )
 async def get_user(
     user_service: UserServiceType,
@@ -180,7 +184,7 @@ async def get_user(
 
 
 @router.put(
-    "/{user_id}",
+    path="/{user_id}",
     dependencies=[
         dep_permission_getter(UserRole.admin, UserRole.user),
         UserOwnership,
@@ -207,10 +211,10 @@ async def update_user(
         user data to update
 
     request : Request
-        request to the endpoint
+        request from the client
 
     response : Response
-        response from the endpoint
+        response to the client
 
     Returns
     -------
@@ -227,7 +231,7 @@ async def update_user(
 
 
 @router.delete(
-    "/{user_id}",
+    path="/{user_id}",
     dependencies=[
         dep_permission_getter(UserRole.admin, UserRole.user),
         UserOwnership,
@@ -250,10 +254,10 @@ async def delete_user(
         user id
 
     request : Request
-        request to the endpoint
+        request from the client
 
     response : Response
-        response from the endpoint
+        response to the client
 
     Returns
     -------

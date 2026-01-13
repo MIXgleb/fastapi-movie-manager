@@ -12,12 +12,12 @@ from app.api.v1.schemas import (
     UserUpdateDTO,
     UserUpdateWithHashedPasswordDTO,
 )
-from app.core.security import (
+from app.domains import UserFilterDM, UserRole
+from app.security import (
     PasswordHelper,
     Payload,
     TokenHelper,
 )
-from app.domains import UserFilterDM, UserRole
 from app.services.base import BaseService, BaseSqlAlchemyService
 
 MSG_USER_NOT_FOUND: Final[str] = "User not found."
@@ -25,7 +25,10 @@ MSG_USER_NOT_FOUND: Final[str] = "User not found."
 
 class BaseUserService(BaseService):
     @abstractmethod
-    async def get_all_users(self, filters: UserFilterDTO) -> Sequence[UserOutputDTO]:
+    async def get_all_users(
+        self,
+        filters: UserFilterDTO,
+    ) -> Sequence[UserOutputDTO]:
         """Get the filtered users.
 
         Parameters
@@ -41,7 +44,10 @@ class BaseUserService(BaseService):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_user(self, user_id: int) -> UserOutputDTO:
+    async def get_user(
+        self,
+        user_id: int,
+    ) -> UserOutputDTO:
         """Get the user by id.
 
         Parameters
@@ -80,10 +86,10 @@ class BaseUserService(BaseService):
             user data to update
 
         request : Request
-            request to the endpoint
+            request from the client
 
         response : Response
-            response from the endpoint
+            response to the client
 
         Raises
         ------
@@ -107,10 +113,10 @@ class BaseUserService(BaseService):
             user id
 
         request : Request
-            request to the endpoint
+            request from the client
 
         response : Response
-            response from the endpoint
+            response to the client
 
         Returns
         -------
@@ -128,7 +134,10 @@ class BaseUserService(BaseService):
 @final
 class UserService(BaseSqlAlchemyService, BaseUserService):
     @override
-    async def get_all_users(self, filters: UserFilterDTO) -> Sequence[UserOutputDTO]:
+    async def get_all_users(
+        self,
+        filters: UserFilterDTO,
+    ) -> Sequence[UserOutputDTO]:
         async with self.uow as uow:
             users = await uow.users.read_all(
                 filters=UserFilterDM(
@@ -138,7 +147,10 @@ class UserService(BaseSqlAlchemyService, BaseUserService):
             return [UserOutputDTO.model_validate(user) for user in users]
 
     @override
-    async def get_user(self, user_id: int) -> UserOutputDTO:
+    async def get_user(
+        self,
+        user_id: int,
+    ) -> UserOutputDTO:
         if user_id == 0:
             return UserOutputDTO(
                 username="guest",

@@ -6,7 +6,10 @@ from starlette.types import ASGIApp
 
 @final
 class CORSMiddleware(BaseCORSMiddleware):
-    def __init__(self, app: ASGIApp) -> None:
+    def __init__(
+        self,
+        app: ASGIApp,
+    ) -> None:
         allow_origins = ["*"]
         allow_methods = ["GET", "POST", "PUT", "DELETE"]
         allow_headers = ["*"]

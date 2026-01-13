@@ -1,6 +1,7 @@
 __all__ = (
     "AuthorizationError",
     "DatabaseSessionError",
+    "ImmutableValueError",
     "InvalidTokenError",
     "QueryValueError",
     "ResourceNotFoundError",
@@ -19,6 +20,7 @@ __all__ = (
 from app.core.exceptions.errors import (
     AuthorizationError,
     DatabaseSessionError,
+    ImmutableValueError,
     InvalidTokenError,
     QueryValueError,
     ResourceNotFoundError,
