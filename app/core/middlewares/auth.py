@@ -6,7 +6,7 @@ from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.types import ASGIApp
 
-from app.security import TokenHelper
+from app.security import token_helper
 
 
 @final
@@ -27,14 +27,14 @@ class AuthMiddleware(BaseHTTPMiddleware):
     ) -> Response:
         path = request.url.path
 
-        tokens = await TokenHelper.validate_tokens(request)
-        await TokenHelper.store_payload(tokens, request)
-        await TokenHelper.store_tokens(tokens, request)
+        tokens = await token_helper.validate_tokens(request)
+        await token_helper.store_payload(tokens, request)
+        await token_helper.store_tokens(tokens, request)
 
         if any(fnmatch(path, url) for url in self.only_admin_urls):
-            await TokenHelper.check_admin_rights(request)
+            await token_helper.check_admin_rights(request)
 
         response = await call_next(request)
 
-        await TokenHelper.save_tokens(request, response)
+        await token_helper.save_tokens(request, response)
         return response

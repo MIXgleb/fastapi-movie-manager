@@ -7,9 +7,9 @@ import app.core.exceptions as exc
 from app.api.v1.schemas import UserCreateDTO, UserInputDTO
 from app.domains import UserRole
 from app.security import (
-    PasswordHelper,
     Payload,
-    TokenHelper,
+    password_helper,
+    token_helper,
 )
 from app.services.base import BaseService, BaseSqlAlchemyService
 
@@ -94,7 +94,7 @@ class AuthService(BaseSqlAlchemyService, BaseAuthService):
                 exc_msg = "User not found."
                 raise exc.AuthorizationError(exc_msg)
 
-            if not PasswordHelper.verify(user_input.password, user.hashed_password):
+            if not password_helper.verify(user_input.password, user.hashed_password):
                 exc_msg = "Authorization failed."
                 raise exc.AuthorizationError(exc_msg)
 
@@ -102,7 +102,7 @@ class AuthService(BaseSqlAlchemyService, BaseAuthService):
                 user_id=user.id,
                 user_role=user.role,
             )
-            await TokenHelper.generate_tokens(
+            await token_helper.generate_tokens(
                 payload=payload,
                 request=request,
             )
@@ -114,7 +114,7 @@ class AuthService(BaseSqlAlchemyService, BaseAuthService):
     ) -> None:
         user_create = UserCreateDTO(
             username=user_input.username,
-            hashed_password=PasswordHelper.hash(user_input.password),
+            hashed_password=password_helper.hash(user_input.password),
             role=UserRole.user,
         )
 
@@ -132,7 +132,7 @@ class AuthService(BaseSqlAlchemyService, BaseAuthService):
         request: Request,
         response: Response,
     ) -> None:
-        await TokenHelper.clear_tokens(
+        await token_helper.clear_tokens(
             request=request,
             response=response,
         )

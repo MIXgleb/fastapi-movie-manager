@@ -14,9 +14,9 @@ from app.api.v1.schemas import (
 )
 from app.domains import UserFilterDM, UserRole
 from app.security import (
-    PasswordHelper,
     Payload,
-    TokenHelper,
+    password_helper,
+    token_helper,
 )
 from app.services.base import BaseService, BaseSqlAlchemyService
 
@@ -179,7 +179,7 @@ class UserService(BaseSqlAlchemyService, BaseUserService):
         async with self.uow as uow:
             user_update_hashed_pwd = UserUpdateWithHashedPasswordDTO(
                 **user_update.model_dump(exclude_unset=True),
-                hashed_password=PasswordHelper.hash(user_update.password),
+                hashed_password=password_helper.hash(user_update.password),
             )
             user = await uow.users.update(
                 item_id=user_id,
@@ -193,7 +193,7 @@ class UserService(BaseSqlAlchemyService, BaseUserService):
                 user_id=user.id,
                 user_role=user.role,
             )
-            await TokenHelper.update_tokens(
+            await token_helper.update_tokens(
                 updated_payload=payload,
                 request=request,
                 response=response,
@@ -212,7 +212,7 @@ class UserService(BaseSqlAlchemyService, BaseUserService):
             if user is None:
                 raise exc.ResourceNotFoundError(MSG_USER_NOT_FOUND)
 
-            await TokenHelper.clear_tokens(
+            await token_helper.clear_tokens(
                 request=request,
                 response=response,
                 user_id=user_id,

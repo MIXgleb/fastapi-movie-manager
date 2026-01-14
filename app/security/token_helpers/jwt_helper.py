@@ -79,8 +79,7 @@ class BaseJWTokenHelper(
 
 @final
 class JWTokenHelper(BaseJWTokenHelper):
-    def __init__(self) -> None:
-        JWTokenHelper.tokens = JWTokenRepository()
+    tokens = JWTokenRepository()
 
     @classmethod
     @override

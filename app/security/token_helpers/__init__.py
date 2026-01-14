@@ -3,7 +3,4 @@ __all__ = (
     "PayloadFromToken",
 )
 
-from app.security.token_helpers.jwt_helper import (
-    JWTokenHelper,
-    PayloadFromToken,
-)
+from app.security.token_helpers.jwt_helper import JWTokenHelper, PayloadFromToken
