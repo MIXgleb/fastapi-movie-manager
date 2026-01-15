@@ -12,7 +12,7 @@ from app.core.exceptions.exc_handlers.base import (
 @final
 class GlobalExceptionHandler(BaseExceptionHandler):
     @override
-    def __call__(
+    async def __call__(
         self,
         request: Request,
         exc: Exception,

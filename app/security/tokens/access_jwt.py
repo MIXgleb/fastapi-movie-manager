@@ -37,7 +37,7 @@ class AccessJWToken(
         try:
             dict_payload = self._decrypt_jwtoken(self.token)
         except jwt.ExpiredSignatureError:
-            raise exc.TokenExpiredError from None
+            raise exc.ExpiredTokenError from None
         except jwt.InvalidTokenError:
             raise exc.InvalidTokenError from None
         else:

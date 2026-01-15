@@ -15,7 +15,7 @@ from app.core.exceptions.exc_handlers.base import (
 @final
 class HTTPExceptionHandler(BaseExceptionHandler):
     @override
-    def __call__(
+    async def __call__(
         self,
         request: Request,
         exc: Exception,
@@ -60,7 +60,7 @@ class HTTPExceptionHandler(BaseExceptionHandler):
 @final
 class DatabaseExceptionHandler(BaseExceptionHandler):
     @override
-    def __call__(
+    async def __call__(
         self,
         request: Request,
         exc: Exception,

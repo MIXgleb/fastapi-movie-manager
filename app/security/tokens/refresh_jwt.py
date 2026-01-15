@@ -59,12 +59,12 @@ class RefreshJWToken(
         jwtoken = await self._redis.get(self.token)
 
         if jwtoken is None:
-            raise exc.TokenExpiredError from None
+            raise exc.ExpiredTokenError from None
 
         try:
             dict_payload = self._decrypt_jwtoken(jwtoken)
         except jwt.ExpiredSignatureError:
-            raise exc.TokenExpiredError from None
+            raise exc.ExpiredTokenError from None
         except jwt.InvalidTokenError:
             raise exc.InvalidTokenError from None
         else:

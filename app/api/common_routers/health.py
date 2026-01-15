@@ -10,7 +10,7 @@ router = APIRouter(
 
 
 @router.get(path="/check")
-def health_check() -> Response:
+async def health_check() -> Response:
     """Check the health of the service.
 
     Returns

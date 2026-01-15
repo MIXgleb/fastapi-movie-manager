@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from fastapi.exceptions import RequestValidationError
 
 
-class TokenExpiredError(HTTPException):
+class ExpiredTokenError(HTTPException):
     def __init__(self) -> None:
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,

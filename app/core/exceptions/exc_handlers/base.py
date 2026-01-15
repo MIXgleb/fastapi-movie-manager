@@ -14,7 +14,7 @@ RESPONSE_JSON_500 = ORJSONResponse(
 
 class BaseExceptionHandler(ABC):
     @abstractmethod
-    def __call__(
+    async def __call__(
         self,
         request: Request,
         exc: Exception,

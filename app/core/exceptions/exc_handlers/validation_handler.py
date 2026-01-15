@@ -50,7 +50,7 @@ class _CustomProblemDetailsSchema(BaseModel):
 @final
 class ValidationExceptionHandler(BaseExceptionHandler):
     @override
-    def __call__(
+    async def __call__(
         self,
         request: Request,
         exc: Exception,

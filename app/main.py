@@ -2,12 +2,14 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 import redis.asyncio as redis
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import ORJSONResponse
 from fastapi_limiter import FastAPILimiter
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
+from starlette.exceptions import HTTPException
+from starlette.middleware.exceptions import ExceptionMiddleware
 
 from app.api import router as api_router
 from app.core import settings
@@ -70,6 +72,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
     await db.close()
 
 
+# FastAPI app
 app = FastAPI(
     title="Movie manager",
     default_response_class=ORJSONResponse,
@@ -80,8 +83,16 @@ app = FastAPI(
     swagger_ui_oauth2_redirect_url=None,
 )
 
+# Routers
 app.include_router(api_router)
 
+# Exception handlers
+app.add_exception_handler(Exception, global_exception_handler)
+app.add_exception_handler(SQLAlchemyError, database_exception_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+
+# Middlewares
 app.add_middleware(
     AuthMiddleware,
     only_admin_urls=(
@@ -93,8 +104,7 @@ app.add_middleware(
 )
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(CORSMiddleware)
-
-app.add_exception_handler(Exception, global_exception_handler)
-app.add_exception_handler(SQLAlchemyError, database_exception_handler)
-app.add_exception_handler(HTTPException, http_exception_handler)
-app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_middleware(
+    ExceptionMiddleware,
+    handlers=app.exception_handlers,
+)

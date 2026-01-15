@@ -5,7 +5,7 @@ router = APIRouter(include_in_schema=False)
 
 
 @router.get(path="/")
-def redirect_root() -> RedirectResponse:
+async def redirect_root() -> RedirectResponse:
     """Redirect the root page '/' to the doc page '/docs'.
 
     Returns
