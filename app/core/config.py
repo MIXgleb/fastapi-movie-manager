@@ -1,3 +1,4 @@
+import functools
 from datetime import timedelta
 from typing import Final
 
@@ -62,12 +63,12 @@ class _TokenConfig(BaseModel):
     refresh_token_ttl: timedelta = timedelta(days=7)
 
     @computed_field
-    @property
+    @functools.cached_property
     def access_token_ttl_seconds(self) -> int:
         return int(self.access_token_ttl.total_seconds())
 
     @computed_field
-    @property
+    @functools.cached_property
     def refresh_token_ttl_seconds(self) -> int:
         return int(self.refresh_token_ttl.total_seconds())
 
@@ -80,7 +81,7 @@ class _RedisConfig(BaseModel):
     encoding: str = "utf8"
 
     @computed_field
-    @property
+    @functools.cached_property
     def url(self) -> str:
         return f"redis://{self.host}:{self.port}"
 
@@ -123,7 +124,7 @@ class _DatabaseConfig(BaseModel):
     }
 
     @computed_field
-    @property
+    @functools.cached_property
     def url(self) -> PostgresDsn:
         return PostgresDsn(
             "postgresql+asyncpg://"

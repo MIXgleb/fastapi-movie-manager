@@ -1,3 +1,4 @@
+import functools
 from datetime import UTC, datetime
 from typing import (
     Any,
@@ -48,7 +49,7 @@ class JWTokenPayload(Payload):
     token_type: TypeToken
 
     @computed_field
-    @property
+    @functools.cached_property
     def exp(self) -> datetime:
         """Token expiration time.
 

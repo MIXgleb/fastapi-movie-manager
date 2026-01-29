@@ -1,3 +1,4 @@
+import functools
 from abc import ABC, abstractmethod
 from typing import Any, final, override
 
@@ -25,7 +26,7 @@ class BaseServiceHelper[UOWType: BaseUOW](ABC):
         """
         raise NotImplementedError
 
-    @property
+    @functools.cached_property
     @abstractmethod
     def service(self) -> BaseService:
         """Service.
@@ -74,10 +75,10 @@ class BaseDatabaseServiceHelper[
     @final
     @override
     async def service_getter(self) -> Service:
-        return self.type_service(self.type_uow, self.db)
+        return self.service
 
     @final
-    @property
+    @functools.cached_property
     @override
     def service(self) -> Service:
         return self.type_service(self.type_uow, self.db)

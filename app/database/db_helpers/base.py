@@ -1,3 +1,4 @@
+import functools
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
 from typing import ClassVar, Self, final
@@ -64,7 +65,7 @@ class BaseDatabaseHelper[
         yield
 
     @final
-    @property
+    @functools.cached_property
     def session_factory(self) -> SessionFactory:
         """Get the session factory.
 
