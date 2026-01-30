@@ -1,0 +1,100 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi-movie-manager
+    env_file:
+      - .env
+    environment:
+      DEBUG: ${DEBUG:-false}
+      APP__HOST: app
+      APP__PORT: 8000
+      DB__HOST: postgres
+      DB__PORT: 5432
+      REDIS__HOST: redis
+      REDIS__PORT: 6379
+    # volumes:
+    #   - .:/${LOGGING__LOG_FOLDER}
+    ports:
+      - ${APP__PORT}:8000
+    networks:
+      - backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "-s", "--max-time", "2", "http://localhost:8000/health/check" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: always
+    entrypoint: [ "./app.sh", "run" ]
+    command: [ "--host", "0.0.0.0", "--port", "8000" ]
+
+  app-cli:
+    extends: app
+    container_name: fastapi-movie-manager-cli
+    environment:
+      AUTO_REMOVAL: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    healthcheck:
+      disable: true
+    entrypoint: [ "./app.sh" ]
+    command: [ "help" ]
+    profiles: [ "cli" ]
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    environment:
+      REDIS_DATABASES: 5
+    # volumes:
+    #   - /var/lib/redis:/data:rw
+    ports:
+      - ${REDIS__PORT}:6379
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    container_name: postgres16
+    environment:
+      POSTGRES_DB: ${DB__TABLENAME}
+      POSTGRES_USER: ${DB__USERNAME}
+      POSTGRES_PASSWORD: ${DB__PASSWORD}
+      PGDATA: /var/lib/postgresql/data/
+    # volumes:
+      # - .:/docker-entrypoint-initdb.d
+      # - pg_data:/var/lib/postgresql/data
+    ports:
+      - ${DB__PORT}:5432
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "${DB__USERNAME}", "-d", "${DB__TABLENAME}" ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  pg_data:
+  redis_data:
+
+
+networks:
+  backend:
+    driver: bridge

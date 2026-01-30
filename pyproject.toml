@@ -17,6 +17,7 @@ dependencies = [
     "loguru>=0.7.3",
     "orjson>=3.11.3",
     "passlib[bcrypt]>=1.7.4",
+    "psycopg2-binary>=2.9.11",
     "pydantic-settings>=2.10.1",
     "pyjwt>=2.10.1",
     "redis[hiredis]>=6.4.0",
@@ -38,6 +39,7 @@ test = [
 
 [tool.ruff]
 # Ruff config: https://docs.astral.sh/ruff/settings
+preview = true
 line-length = 95
 target-version = "py313"
 extend-exclude = [
@@ -53,7 +55,6 @@ docstring-code-format = true
 [tool.ruff.lint]
 preview = true
 select = ["ALL"]
-allowed-confusables = []
 ignore = [
     "D203",     # blank line before class docstring (-> D211)
     "D212",     # docstring starts from the first line (-> D213)
@@ -62,6 +63,7 @@ ignore = [
     "D100",     # docstring in public module
     "D101",     # docstring in public class
     "D104",     # docstring in public package
+    "RUF067",   # `__init__` module should only contain docstrings and re-exports
 ]
 
 [tool.ruff.lint.pylint]
@@ -71,6 +73,13 @@ allow-dunder-method-names = ["__tablename__"]
 convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
+"scripts/*.py" = [
+    "T201",     # `print` found
+    "BLE001",   # Do not catch blind exception: `Exception`
+    "S404",     # `subprocess` module is possibly insecure
+    "S603",     # `subprocess` call: check for execution of untrusted input
+    "PLW1510",  # `subprocess.run` without explicit `check` argument
+]
 "app/core/exceptions/errors.py" = [
     "D107",     # missing docstring in `__init__`
 ]

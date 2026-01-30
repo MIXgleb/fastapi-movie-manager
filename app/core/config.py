@@ -86,7 +86,7 @@ class _RedisConfig(BaseModel):
         return f"redis://{self.host}:{self.port}"
 
 
-class _RunConfig(BaseModel):
+class _AppConfig(BaseModel):
     host: str = "127.0.0.1"
     port: int = 8000
 
@@ -135,20 +135,19 @@ class _DatabaseConfig(BaseModel):
 
 class _Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
-        case_sensitive=False,
         env_nested_delimiter="__",
-        env_prefix="APP_CONFIG__",
+        case_sensitive=False,
+        extra="ignore",
     )
+
+    api: _ApiPrefix = _ApiPrefix()
+    app: _AppConfig = _AppConfig()
 
     token: _TokenConfig
     db: _DatabaseConfig
     redis: _RedisConfig
     logging: _LoggingConfig
     debug: bool
-
-    run: _RunConfig = _RunConfig()
-    api: _ApiPrefix = _ApiPrefix()
 
 
 settings: Final = _Settings()  # type: ignore[reportCallIssue]
