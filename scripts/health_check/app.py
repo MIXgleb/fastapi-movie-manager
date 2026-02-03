@@ -1,12 +1,13 @@
 import sys
 from time import sleep
+from typing import Final
 
 import httpx
 
 from app.core.config import settings
 
-TIMEOUT = 2  # seconds
-SUCCESS_CODES = {200}
+TIMEOUT: Final[float] = 2  # seconds
+SUCCESS_CODES: Final[set[int]] = {200}
 
 
 def check_connection() -> tuple[bool, str]:

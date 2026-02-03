@@ -3,7 +3,8 @@ __all__ = (
     "settings",
 )
 
+from typing import Final
 
 from app.core.config import settings
 
-DEBUG = settings.debug
+DEBUG: Final[bool] = settings.debug

@@ -2,13 +2,14 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Final
 
-SCRIPTS_ROOT = Path(__file__).parent  # current directory
-PYTHON_PATH = Path(os.getenv("PYTHONPATH", "/app"))
+SCRIPTS_ROOT: Final[Path] = Path(__file__).parent  # current directory
+PYTHON_PATH: Final[Path] = Path(os.getenv("PYTHONPATH", "/app"))
 
-RELATIVE_ROOT = SCRIPTS_ROOT.relative_to(PYTHON_PATH)
-EXCLUDED_NAMES = {"all", "__init__"}
-TIMEOUT = 5  # seconds
+RELATIVE_ROOT: Final[Path] = SCRIPTS_ROOT.relative_to(PYTHON_PATH)
+EXCLUDED_NAMES: Final[set[str]] = {"all", "__init__"}
+TIMEOUT: Final[float] = 5  # seconds
 
 
 def run_health_check(script_name: str) -> bool:
