@@ -21,10 +21,10 @@ def check_connection() -> tuple[bool, str]:
         encoding=settings.redis.encoding,
     )
 
-    if not redis_conn.ping():  # type: ignore[reportUnknownMemberType]
+    if not redis_conn.ping():
         return False, "❌ Redis is not responding"
 
-    info: dict[str, str] = redis_conn.info()  # type: ignore[reportUnknownMemberType]
+    info: dict[str, str] = redis_conn.info()  # type: ignore[reportAssignmentType]
     version = info.get("redis_version", "unknown")
     used_memory = info.get("used_memory_human", "unknown")
 

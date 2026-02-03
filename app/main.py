@@ -36,12 +36,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
     ----------
     _ : FastAPI
         fastapi application instance
-
-    Returns
-    -------
-    AsyncGenerator
-        open before launching, close before completion
-    """  # noqa: DOC202
+    """
     logger.info("🚀 Application starting up...")
 
     setup_logger()
@@ -53,7 +48,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
         db=settings.redis.db_request_limiter,
         encoding=settings.redis.encoding,
     )
-    await redis_connection.ping()  # type: ignore[reportUnknownMemberType]
+    await redis_connection.ping()
     logger.info("Connection to redis completed.")
 
     logger.info("Connecting to database...")
@@ -61,7 +56,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
     await db.init(str(settings.db.url))
     logger.info("Connection to database completed.")
 
-    await FastAPILimiter.init(redis_connection)  # type: ignore[reportUnknownMemberType]
+    await FastAPILimiter.init(redis_connection)
 
     yield
 
