@@ -36,19 +36,26 @@ cleanup() {
 		return 1
 	}
 
-	if [ "$AUTO_REMOVAL" = true ] &&
-		[ -f /.dockerenv ] &&
-		! is_excluded $COMMAND; then
+	[ $AUTO_REMOVAL != true ] && return 0
+	[ ! -f /.dockerenv ] && return 0
+	is_excluded $COMMAND && return 0
 
-		local container_id="$(hostname)"
+	local container_id="$(hostname)"
 
+	echo ""
+	echo "🧹 $(colorize "magenta" "Self-destructing container:") $(colorize "yellow" $container_id)"
+
+	if ! curl --unix-socket $DOCKER_SOCKET_PATH -X DELETE \
+		"http://localhost/${DOCKER_API_VERSION}/containers/${container_id}?force=true"; then
 		echo ""
-		echo "🧹 $(colorize "magenta" "Self-destructing container:") $(colorize "yellow" $container_id)"
-
-		if ! curl --unix-socket $DOCKER_SOCKET_PATH -X DELETE \
-			"http://localhost/${DOCKER_API_VERSION}/containers/${container_id}?force=true"; then
-			echo "⚠️ $(colorize "red" "Could not auto-remove container")"
-		fi
+		echo "┌─────────────────────────────────────────────────────────────"
+		echo "│  ⚠️ $(colorize "red" "Could not auto-remove container")"
+		echo "│"
+		echo "│  💡 $(colorize "yellow" "Possible solutions:")"
+		echo "│    1. Check Docker socket: $(colorize "blue" "ls -la $DOCKER_SOCKET_PATH")"
+		echo "│    2. Check container: $(colorize "blue" "docker ps -a | grep $container_id")"
+		echo "│    3. Manual removal: $(colorize "blue" "docker rm -f $container_id")"
+		echo "└─────────────────────────────────────────────────────────────"
 	fi
 }
 
