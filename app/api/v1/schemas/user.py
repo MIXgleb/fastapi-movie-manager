@@ -1,21 +1,20 @@
 from datetime import datetime
-from typing import Final
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.core.constants import (
+    USER_PASSWORD_INPUT_FIELD,
+    USER_USERNAME_INPUT_FIELD,
+)
 from app.domains import TypeUserRole
-
-USER_USERNAME_PATTERN: Final[str] = r"^[\w\d_\-]+$"
-USERNAME_INPUT_FIELD: Final = Field(max_length=20, pattern=USER_USERNAME_PATTERN)
-PASSWORD_INPUT_FIELD: Final = Field(min_length=5, max_length=30)
 
 
 class UserBaseModel(BaseModel):
-    username: str = USERNAME_INPUT_FIELD
+    username: str = USER_USERNAME_INPUT_FIELD
 
 
 class UserPasswordBaseModel(BaseModel):
-    password: str = PASSWORD_INPUT_FIELD
+    password: str = USER_PASSWORD_INPUT_FIELD
 
 
 class UserHashedPasswordBaseModel(BaseModel):

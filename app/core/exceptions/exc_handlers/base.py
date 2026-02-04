@@ -1,20 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Final
 
-from fastapi import Request, Response, status
-from fastapi.responses import ORJSONResponse
+from fastapi import Request, Response
 
 type Method = str
 type Path = str
 type Address = str
-
-RESPONSE_JSON_500: Final[Response] = ORJSONResponse(
-    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    content={
-        "error": "Internal server error.",
-        "message": "Please try again later.",
-    },
-)
 
 
 class BaseExceptionHandler(ABC):

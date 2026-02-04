@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from collections.abc import Sequence
 from datetime import UTC, datetime
-from typing import Final, final, override
+from typing import final, override
 
 from fastapi import Request, Response
 
@@ -12,6 +12,7 @@ from app.api.v1.schemas import (
     UserUpdateDTO,
     UserUpdateWithHashedPasswordDTO,
 )
+from app.core.constants import MESSAGE_USER_NOT_FOUND
 from app.domains import UserFilterDM, UserRole
 from app.security import (
     Payload,
@@ -19,8 +20,6 @@ from app.security import (
     token_helper,
 )
 from app.services.base import BaseService, BaseSqlAlchemyService
-
-MSG_USER_NOT_FOUND: Final[str] = "User not found."
 
 
 class BaseUserService(BaseService):
@@ -164,7 +163,7 @@ class UserService(BaseSqlAlchemyService, BaseUserService):
             user = await uow.users.read(user_id)
 
             if user is None:
-                raise exc.ResourceNotFoundError(MSG_USER_NOT_FOUND)
+                raise exc.ResourceNotFoundError(MESSAGE_USER_NOT_FOUND)
 
             return UserOutputDTO.model_validate(user)
 
@@ -187,7 +186,7 @@ class UserService(BaseSqlAlchemyService, BaseUserService):
             )
 
             if user is None:
-                raise exc.ResourceNotFoundError(MSG_USER_NOT_FOUND)
+                raise exc.ResourceNotFoundError(MESSAGE_USER_NOT_FOUND)
 
             payload = Payload(
                 user_id=user.id,
@@ -210,7 +209,7 @@ class UserService(BaseSqlAlchemyService, BaseUserService):
             user = await uow.users.delete(user_id)
 
             if user is None:
-                raise exc.ResourceNotFoundError(MSG_USER_NOT_FOUND)
+                raise exc.ResourceNotFoundError(MESSAGE_USER_NOT_FOUND)
 
             await token_helper.clear_tokens(
                 request=request,

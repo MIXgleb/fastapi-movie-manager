@@ -3,10 +3,8 @@ from typing import final, override
 from fastapi import Request, Response
 from loguru import logger
 
-from app.core.exceptions.exc_handlers.base import (
-    RESPONSE_JSON_500,
-    BaseExceptionHandler,
-)
+from app.core.constants import HTTP_RESPONSE_500
+from app.core.exceptions.exc_handlers.base import BaseExceptionHandler
 
 
 @final
@@ -31,4 +29,4 @@ class GlobalExceptionHandler(BaseExceptionHandler):
             method=method,
             path=path,
         )
-        return RESPONSE_JSON_500
+        return HTTP_RESPONSE_500

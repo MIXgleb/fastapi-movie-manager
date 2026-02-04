@@ -6,10 +6,8 @@ from fastapi.responses import ORJSONResponse
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.core.exceptions.exc_handlers.base import (
-    RESPONSE_JSON_500,
-    BaseExceptionHandler,
-)
+from app.core.constants import HTTP_RESPONSE_500
+from app.core.exceptions.exc_handlers.base import BaseExceptionHandler
 
 
 @final
@@ -51,7 +49,7 @@ class HTTPExceptionHandler(BaseExceptionHandler):
             method=method,
             path=path,
         )
-        return RESPONSE_JSON_500
+        return HTTP_RESPONSE_500
 
 
 @final
@@ -78,7 +76,7 @@ class DatabaseExceptionHandler(BaseExceptionHandler):
                 method=method,
                 path=path,
             )
-            return RESPONSE_JSON_500
+            return HTTP_RESPONSE_500
 
         logger_db_exc.bind(type="unexpected_exception").error(
             "UnexpectedException: {exc_msg};\nRequest: {method} {path}",
@@ -86,4 +84,4 @@ class DatabaseExceptionHandler(BaseExceptionHandler):
             method=method,
             path=path,
         )
-        return RESPONSE_JSON_500
+        return HTTP_RESPONSE_500

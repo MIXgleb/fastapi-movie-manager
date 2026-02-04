@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from collections.abc import Sequence
-from typing import Final, final, override
+from typing import final, override
 
 import app.core.exceptions as exc
 from app.api.v1.schemas import (
@@ -9,10 +9,9 @@ from app.api.v1.schemas import (
     MovieOutputDTO,
     MovieUpdateDTO,
 )
+from app.core.constants import MESSAGE_MOVIE_NOT_FOUND
 from app.domains import MovieFilterDM
 from app.services.base import BaseService, BaseSqlAlchemyService
-
-MSG_MOVIE_NOT_FOUND: Final[str] = "Movie not found."
 
 
 class BaseMovieService(BaseService):
@@ -170,7 +169,7 @@ class MovieService(BaseSqlAlchemyService, BaseMovieService):
             movie = await uow.movies.read(movie_id)
 
             if movie is None:
-                raise exc.ResourceNotFoundError(MSG_MOVIE_NOT_FOUND)
+                raise exc.ResourceNotFoundError(MESSAGE_MOVIE_NOT_FOUND)
 
             return MovieOutputDTO.model_validate(movie)
 
@@ -187,7 +186,7 @@ class MovieService(BaseSqlAlchemyService, BaseMovieService):
             )
 
             if movie is None:
-                raise exc.ResourceNotFoundError(MSG_MOVIE_NOT_FOUND)
+                raise exc.ResourceNotFoundError(MESSAGE_MOVIE_NOT_FOUND)
 
             return MovieOutputDTO.model_validate(movie)
 
@@ -200,6 +199,6 @@ class MovieService(BaseSqlAlchemyService, BaseMovieService):
             movie = await uow.movies.delete(movie_id)
 
             if movie is None:
-                raise exc.ResourceNotFoundError(MSG_MOVIE_NOT_FOUND)
+                raise exc.ResourceNotFoundError(MESSAGE_MOVIE_NOT_FOUND)
 
             return MovieOutputDTO.model_validate(movie)

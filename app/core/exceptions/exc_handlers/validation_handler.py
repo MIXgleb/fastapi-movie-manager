@@ -8,10 +8,8 @@ from fastapi.responses import ORJSONResponse
 from loguru import logger
 from pydantic import BaseModel, Field
 
-from app.core.exceptions.exc_handlers.base import (
-    RESPONSE_JSON_500,
-    BaseExceptionHandler,
-)
+from app.core.constants import HTTP_RESPONSE_500
+from app.core.exceptions.exc_handlers.base import BaseExceptionHandler
 from app.core.typing import DictUrlParams
 
 
@@ -74,7 +72,7 @@ class ValidationExceptionHandler(BaseExceptionHandler):
             method=method,
             path=path,
         )
-        return RESPONSE_JSON_500
+        return HTTP_RESPONSE_500
 
     @classmethod
     def _get_custom_error_descriptions(
