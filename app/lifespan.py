@@ -42,7 +42,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
         db=settings.redis.db_request_limiter,
         encoding=settings.redis.encoding,
     )
-    await redis_connection.ping()
+    await redis_connection.ping()  # type: ignore[reportGeneralTypeIssues]
     logger.info("Connection to redis complete.")
 
     # ---------------------------------------------------------------------------
