@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from pathlib import Path
 
 from loguru import logger
@@ -12,14 +13,31 @@ from app.core.logging.loggers import (
 )
 
 
-def setup_logger() -> None:
-    """Initialize project logging."""
+def setup_logger(
+    external_loggers: Sequence[str] = (),
+    disabled_loggers: Sequence[str] = (),
+) -> None:
+    """Initialize project logging.
+
+    Parameters
+    ----------
+    external_loggers : Sequence[str], optional
+        name of the external loggers for interception, \
+            by default ()
+
+    disabled_loggers : Sequence[str], optional
+        name of the disabled loggers for interception, \
+            by default ()
+    """
     log_folder = Path(settings.logging.log_folder).resolve()
     log_folder.mkdir(exist_ok=True, parents=True)
 
     logger.remove()
 
-    intercept_logger.register()
+    intercept_logger.register(
+        external_loggers=external_loggers,
+        disabled_loggers=disabled_loggers,
+    )
 
     if settings.logging.stream.enabled:
         settings.logging.stream_log_handler = stream_logger.register()

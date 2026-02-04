@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import Final
 
 from fastapi import Response, status
@@ -5,10 +6,55 @@ from fastapi.responses import ORJSONResponse
 from pydantic import Field
 
 # ===========================================================================
+# Logging
+# ===========================================================================
+EXTERNAL_LOGGERS: Final[Sequence[str]] = (
+    # -------------------
+    # FastAPI and Uvicorn
+    # -------------------
+    "uvicorn",
+    "uvicorn.access",
+    "uvicorn.error",
+    "fastapi",
+    # -------------------
+    # SQLAlchemy
+    # -------------------
+    "sqlalchemy",
+    "sqlalchemy.engine",
+    "sqlalchemy.pool",
+    "sqlalchemy.orm",
+    # -------------------
+    # Alembic
+    # -------------------
+    "alembic",
+    # -------------------
+    # AsyncPG
+    # -------------------
+    "asyncpg",
+    # -------------------
+    # Redis
+    # -------------------
+    "redis",
+    "redis.client",
+    # -------------------
+    # HTTP clients
+    # -------------------
+    "httpx",
+    "httpcore",
+    # -------------------
+    # Security
+    # -------------------
+    "cryptography",
+)
+DISABLED_LOGGERS: Final[Sequence[str]] = ("uvicorn.access",)
+
+
+# ===========================================================================
 # Messages
 # ===========================================================================
 MESSAGE_MOVIE_NOT_FOUND: Final[str] = "Movie not found."
 MESSAGE_USER_NOT_FOUND: Final[str] = "User not found."
+
 
 # ===========================================================================
 # Schemas
@@ -32,6 +78,7 @@ MOVIE_RATE_INPUT_FIELD: Final = Field(ge=0, le=5)
 USER_USERNAME_PATTERN: Final[str] = r"^[\w\d_\-]+$"
 USER_USERNAME_INPUT_FIELD: Final = Field(max_length=20, pattern=USER_USERNAME_PATTERN)
 USER_PASSWORD_INPUT_FIELD: Final = Field(min_length=5, max_length=30)
+
 
 # ===========================================================================
 # HTTP

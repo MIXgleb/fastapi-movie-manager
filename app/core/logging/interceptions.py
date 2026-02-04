@@ -5,7 +5,7 @@ from loguru import logger
 
 
 @final
-class InterceptionHandler(logging.Handler):
+class InterceptHandler(logging.Handler):
     @override
     def emit(
         self,

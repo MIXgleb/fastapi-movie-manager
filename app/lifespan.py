@@ -7,6 +7,10 @@ from fastapi_limiter import FastAPILimiter
 from loguru import logger
 
 from app.core import settings
+from app.core.constants import (
+    DISABLED_LOGGERS,
+    EXTERNAL_LOGGERS,
+)
 from app.core.logging import setup_logger
 from app.database import SqlAlchemyDatabaseHelper
 
@@ -20,7 +24,10 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
     _ : FastAPI
         fastapi application instance
     """
-    setup_logger()
+    setup_logger(
+        external_loggers=EXTERNAL_LOGGERS,
+        disabled_loggers=DISABLED_LOGGERS,
+    )
 
     # ===========================================================================
     logger.info("🚀 Application starting up...")
