@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Any, Required, TypedDict
 
 
@@ -18,3 +19,12 @@ class DictUrlParams(TypedDict, total=False):
     params: dict[str, Any]
     query: dict[str, str | list[str]]
     body: Any
+
+
+@dataclass(slots=True, frozen=True)
+class ExcludedLogRequest:
+    """Request parameters."""
+
+    method: str = "*"
+    path: str = "*"
+    host: str = "*"

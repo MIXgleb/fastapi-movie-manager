@@ -9,7 +9,6 @@ from fastapi_limiter import FastAPILimiter
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
-from starlette.middleware.exceptions import ExceptionMiddleware
 
 from app.api import router as api_router
 from app.core import settings
@@ -23,8 +22,10 @@ from app.core.logging import setup_logger
 from app.core.middlewares import (
     AuthMiddleware,
     CORSMiddleware,
+    ExceptionMiddleware,
     LoggingMiddleware,
 )
+from app.core.typing import ExcludedLogRequest
 from app.database import SqlAlchemyDatabaseHelper
 
 
@@ -89,17 +90,31 @@ app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
 # Middlewares
 app.add_middleware(
-    AuthMiddleware,
-    only_admin_urls=(
-        "/api/docs",
-        "/api/docs/oauth2-redirect",
-        "/api/redoc",
-        "/api/openapi.json",
+    middleware_class=AuthMiddleware,
+    admin_urls=(
+        "/api/docs*",
+        "/api/redoc*",
+        "/api/openapi*",
     ),
 )
-app.add_middleware(LoggingMiddleware)
-app.add_middleware(CORSMiddleware)
 app.add_middleware(
-    ExceptionMiddleware,
+    middleware_class=LoggingMiddleware,
+    exclude_requests=(
+        ExcludedLogRequest(
+            method="GET",
+            path="/health/check*",
+            host="127.0.0.1",
+        ),
+    ),
+)
+app.add_middleware(
+    middleware_class=CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+    allow_credentials=True,
+)
+app.add_middleware(
+    middleware_class=ExceptionMiddleware,
     handlers=app.exception_handlers,
 )
