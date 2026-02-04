@@ -14,8 +14,6 @@ services:
       DB__PORT: 5432
       REDIS__HOST: redis
       REDIS__PORT: 6379
-    # volumes:
-    #   - .:/${LOGGING__LOG_FOLDER}
     ports:
       - ${APP__PORT}:8000
     networks:
@@ -26,10 +24,10 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "-s", "--max-time", "2", "http://localhost:8000/health/check" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+      test: [ "CMD", "curl", "-f", "-s", "http://localhost:8000/internal/healthcheck" ]
+      interval: 30s
+      timeout: 2s
+      retries: 5
       start_period: 30s
     restart: always
     entrypoint: [ "./app.sh", "run" ]
@@ -53,8 +51,6 @@ services:
     container_name: redis
     environment:
       REDIS_DATABASES: 5
-    # volumes:
-    #   - /var/lib/redis:/data:rw
     ports:
       - ${REDIS__PORT}:6379
     networks:
@@ -62,8 +58,8 @@ services:
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 30s
-      timeout: 5s
-      retries: 10
+      timeout: 2s
+      retries: 5
       start_period: 30s
     restart: unless-stopped
 
@@ -85,8 +81,8 @@ services:
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "${DB__USERNAME}", "-d", "${DB__TABLENAME}" ]
       interval: 30s
-      timeout: 10s
-      retries: 10
+      timeout: 2s
+      retries: 5
       start_period: 30s
     restart: unless-stopped
 
