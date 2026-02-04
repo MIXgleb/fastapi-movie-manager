@@ -1,3 +1,5 @@
+__all__ = ("router",)
+
 from fastapi import APIRouter, Depends
 from fastapi_limiter.depends import RateLimiter
 

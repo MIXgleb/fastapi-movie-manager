@@ -10,7 +10,7 @@ from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
-from app.api import router as api_router
+from app.api import api_v1_router, common_router
 from app.core import settings
 from app.core.exceptions import (
     database_exception_handler,
@@ -80,7 +80,12 @@ app = FastAPI(
 )
 
 # Routers
-app.include_router(api_router)
+app.include_router(common_router)
+app.include_router(
+    router=api_v1_router,
+    prefix=settings.api.prefix,
+)
+
 
 # Exception handlers
 app.add_exception_handler(Exception, global_exception_handler)
