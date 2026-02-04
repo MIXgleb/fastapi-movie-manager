@@ -46,7 +46,10 @@ EXTERNAL_LOGGERS: Final[Sequence[str]] = (
     # -------------------
     "cryptography",
 )
-DISABLED_LOGGERS: Final[Sequence[str]] = ("uvicorn.access",)
+DISABLED_LOGGERS: Final[Sequence[str]] = (
+    "uvicorn.access",
+    "bcrypt",
+)
 
 
 # ===========================================================================
