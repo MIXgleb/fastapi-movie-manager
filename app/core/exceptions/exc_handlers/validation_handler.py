@@ -54,7 +54,9 @@ class ValidationExceptionHandler(BaseExceptionHandler):
                 instance=self._get_full_url_params(request, exc),
                 errors=self._get_custom_error_descriptions(exc),
             )
-            logger_validation_exc.bind(type="validation_exception").warning(
+            logger_validation_exc.bind(
+                type="validation_exception",
+            ).warning(
                 "RequestValidationError: {exc_msg};\nRequest: {method} {path}",
                 exc_msg=problem_details.model_dump_json(),
                 method=method,
@@ -66,7 +68,9 @@ class ValidationExceptionHandler(BaseExceptionHandler):
                 headers={"Content-Type": "application/problem+json"},
             )
 
-        logger_validation_exc.bind(type="unexpected_exception").error(
+        logger_validation_exc.bind(
+            type="unexpected_exception",
+        ).error(
             "UnexpectedException: {exc_msg};\nRequest: {method} {path}",
             exc_msg=repr(exc),
             method=method,

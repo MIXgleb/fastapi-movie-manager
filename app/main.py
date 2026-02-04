@@ -21,7 +21,9 @@ from app.core.middlewares import (
 from app.core.typing import ExcludedLogRequest
 from app.lifespan import lifespan
 
+# ===========================================================================
 # FastAPI application
+# ===========================================================================
 app = FastAPI(
     title="Movie manager",
     default_response_class=ORJSONResponse,
@@ -32,27 +34,47 @@ app = FastAPI(
     swagger_ui_oauth2_redirect_url=None,
 )
 
+# ===========================================================================
 # Routers
+# ===========================================================================
 app.include_router(common_router)
 app.include_router(
     router=api_v1_router,
     prefix=settings.api.prefix,
 )
 
-
+# ===========================================================================
 # Exception handlers
-app.add_exception_handler(Exception, global_exception_handler)
-app.add_exception_handler(SQLAlchemyError, database_exception_handler)
-app.add_exception_handler(HTTPException, http_exception_handler)
-app.add_exception_handler(RequestValidationError, validation_exception_handler)
+# ===========================================================================
+app.add_exception_handler(
+    exc_class_or_status_code=Exception,
+    handler=global_exception_handler,
+)
+app.add_exception_handler(
+    exc_class_or_status_code=SQLAlchemyError,
+    handler=database_exception_handler,
+)
+app.add_exception_handler(
+    exc_class_or_status_code=HTTPException,
+    handler=http_exception_handler,
+)
+app.add_exception_handler(
+    exc_class_or_status_code=RequestValidationError,
+    handler=validation_exception_handler,
+)
 
+# ===========================================================================
 # Middlewares
+# ===========================================================================
 app.add_middleware(
     middleware_class=AuthMiddleware,
     admin_urls=(
-        "/api/docs*",
-        "/api/redoc*",
-        "/api/openapi*",
+        # "/docs*",
+        # "/redoc*",
+        # "/openapi*",
+        # "/api/docs*",
+        # "/api/redoc*",
+        # "/api/openapi*",
     ),
 )
 app.add_middleware(

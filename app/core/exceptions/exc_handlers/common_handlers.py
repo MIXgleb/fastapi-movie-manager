@@ -1,10 +1,11 @@
 from typing import final, override
 
-from fastapi import HTTPException, Request, Response
+from fastapi import Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import ORJSONResponse
 from loguru import logger
 from sqlalchemy.exc import SQLAlchemyError
+from starlette.exceptions import HTTPException
 
 from app.core.constants import HTTP_RESPONSE_500
 from app.core.exceptions.exc_handlers.base import BaseExceptionHandler
@@ -43,7 +44,9 @@ class HTTPExceptionHandler(BaseExceptionHandler):
                 content=jsonable_encoder({"error": exc.detail}),
             )
 
-        logger_fastapi_exc.bind(type="unexpected_exception").error(
+        logger_fastapi_exc.bind(
+            type="unexpected_exception",
+        ).error(
             "UnexpectedException: {exc_msg};\nRequest: {method} {path}",
             exc_msg=repr(exc),
             method=method,
@@ -70,7 +73,9 @@ class DatabaseExceptionHandler(BaseExceptionHandler):
         )
 
         if isinstance(exc, SQLAlchemyError):
-            logger_db_exc.bind(type="sqlalchemy_exception").error(
+            logger_db_exc.bind(
+                type="sqlalchemy_exception",
+            ).error(
                 "SQLAlchemyException: {exc_msg};\nRequest: {method} {path}",
                 exc_msg=repr(exc),
                 method=method,
@@ -78,7 +83,9 @@ class DatabaseExceptionHandler(BaseExceptionHandler):
             )
             return HTTP_RESPONSE_500
 
-        logger_db_exc.bind(type="unexpected_exception").error(
+        logger_db_exc.bind(
+            type="unexpected_exception",
+        ).error(
             "UnexpectedException: {exc_msg};\nRequest: {method} {path}",
             exc_msg=repr(exc),
             method=method,
