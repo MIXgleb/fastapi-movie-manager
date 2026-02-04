@@ -20,15 +20,12 @@ class HTTPExceptionHandler(BaseExceptionHandler):
         request: Request,
         exc: Exception,
     ) -> Response:
-        method = request.method
-        path = str(request.url)
-        client = request.client
-        client_ip = client.host if client is not None else "unknown"
+        method, path, address = self._get_request_params(request)
 
         logger_fastapi_exc = logger.bind(
             path=path,
             method=method,
-            client_ip=client_ip,
+            address=address,
             headers=request.headers,
         )
 
@@ -65,15 +62,12 @@ class DatabaseExceptionHandler(BaseExceptionHandler):
         request: Request,
         exc: Exception,
     ) -> Response:
-        method = request.method
-        path = str(request.url)
-        client = request.client
-        client_ip = client.host if client is not None else "unknown"
+        method, path, address = self._get_request_params(request)
 
         logger_db_exc = logger.bind(
             path=path,
             method=method,
-            client_ip=client_ip,
+            address=address,
             headers=request.headers,
         )
 

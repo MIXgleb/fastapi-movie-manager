@@ -1,8 +1,7 @@
-from collections.abc import Sequence
-from typing import TypedDict
-
 from fastapi import HTTPException, status
 from fastapi.exceptions import RequestValidationError
+
+from app.core.typing import DictCustomRequestValidationError
 
 
 class ExpiredTokenError(HTTPException):
@@ -87,19 +86,12 @@ class QueryValueError(RequestValidationError, AttributeError):
         query_key: str,
     ) -> None:
         super().__init__([
-            QueryValueError._DictRequestValidationError(
+            DictCustomRequestValidationError(
                 loc=["query", query_key],
                 msg=f"There is no {query_value!r} attribute",
                 type="wrong_query_value",
             )
         ])
-
-    class _DictRequestValidationError(TypedDict):
-        """Typed dict."""
-
-        loc: Sequence[str]
-        msg: str
-        type: str
 
 
 class DatabaseSessionError(OSError):

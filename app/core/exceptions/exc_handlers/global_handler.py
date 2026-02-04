@@ -17,16 +17,13 @@ class GlobalExceptionHandler(BaseExceptionHandler):
         request: Request,
         exc: Exception,
     ) -> Response:
-        method = request.method
-        path = str(request.url)
-        client = request.client
-        client_ip = client.host if client is not None else "unknown"
+        method, path, address = self._get_request_params(request)
 
         logger.bind(
             type="unexpected_exception",
             path=path,
             method=method,
-            client_ip=client_ip,
+            address=address,
             headers=request.headers,
         ).error(
             "UnexpectedException: {exc_msg};\nRequest: {method} {path}",

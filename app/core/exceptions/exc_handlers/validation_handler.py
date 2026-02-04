@@ -1,11 +1,5 @@
 from collections.abc import Sequence
-from typing import (
-    Any,
-    Required,
-    TypedDict,
-    final,
-    override,
-)
+from typing import Any, final, override
 
 from fastapi import Request, Response, status
 from fastapi.encoders import jsonable_encoder
@@ -18,6 +12,7 @@ from app.core.exceptions.exc_handlers.base import (
     RESPONSE_JSON_500,
     BaseExceptionHandler,
 )
+from app.core.typing import DictUrlParams
 
 
 class _CustomValidationErrorSchema(BaseModel):
@@ -27,23 +22,12 @@ class _CustomValidationErrorSchema(BaseModel):
     type: str
 
 
-class _DictUrlParams(TypedDict, total=False):
-    method: Required[str]
-    path: Required[str]
-    params: dict[str, Any]
-    query: dict[str, str | list[str]]
-    body: Any
-
-
 class _CustomProblemDetailsSchema(BaseModel):
-    type: str = Field(
-        default="about:blank",
-        description="A URI reference that identifies the problem type",
-    )
+    type: str = Field(default="about:blank")
     title: str
     status: int
     detail: str
-    instance: _DictUrlParams
+    instance: DictUrlParams
     errors: list[_CustomValidationErrorSchema]
 
 
@@ -55,15 +39,12 @@ class ValidationExceptionHandler(BaseExceptionHandler):
         request: Request,
         exc: Exception,
     ) -> Response:
-        method = request.method
-        path = str(request.url)
-        client = request.client
-        client_ip = client.host if client is not None else "unknown"
+        method, path, address = self._get_request_params(request)
 
         logger_validation_exc = logger.bind(
             path=path,
             method=method,
-            client_ip=client_ip,
+            address=address,
             headers=request.headers,
         )
 
@@ -115,8 +96,8 @@ class ValidationExceptionHandler(BaseExceptionHandler):
         cls,
         request: Request,
         exc: RequestValidationError,
-    ) -> _DictUrlParams:
-        instance = _DictUrlParams(
+    ) -> DictUrlParams:
+        instance = DictUrlParams(
             method=request.method,
             path=request.url.path,
         )
