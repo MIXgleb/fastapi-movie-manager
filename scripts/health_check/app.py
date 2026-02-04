@@ -18,7 +18,7 @@ def check_connection() -> tuple[bool, str]:
     tuple[bool, str]
         status, message
     """
-    health_check_url = f"http://{settings.app.host}:{settings.app.port}/health/check"
+    health_check_url = f"http://{settings.app.host}:{settings.app.port}{settings.api.internal.prefix}/healthcheck"
 
     with httpx.Client() as client:
         for _ in range(3):

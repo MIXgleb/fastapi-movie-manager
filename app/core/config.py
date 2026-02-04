@@ -98,9 +98,13 @@ class _ApiV1Prefix(BaseModel):
     movies: str = "/movies"
 
 
+class _ApiInternalPrefix(BaseModel):
+    prefix: str = "/internal"
+
+
 class _ApiPrefix(BaseModel):
     prefix: str = "/api"
-    health: str = "/health"
+    internal: _ApiInternalPrefix = _ApiInternalPrefix()
     v1: _ApiV1Prefix = _ApiV1Prefix()
 
 

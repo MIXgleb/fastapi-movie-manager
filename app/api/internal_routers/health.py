@@ -1,15 +1,10 @@
 from fastapi import APIRouter, Response
 from fastapi.responses import ORJSONResponse
 
-from app.core import settings
-
-router = APIRouter(
-    prefix=settings.api.health,
-    tags=["Health"],
-)
+router = APIRouter(tags=["Health"])
 
 
-@router.get(path="/check")
+@router.get(path="/healthcheck")
 async def health_check() -> Response:
     """Check the health of the service.
 
