@@ -29,6 +29,8 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
     """
 
+    __slots__ = ("excluded_requests",)
+
     def __init__(
         self,
         app: ASGIApp,

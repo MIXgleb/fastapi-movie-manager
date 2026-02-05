@@ -21,6 +21,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
             (wildcard is available), by default ()
     """
 
+    __slots__ = ("admin_urls",)
+
     def __init__(
         self,
         app: ASGIApp,
