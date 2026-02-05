@@ -13,7 +13,6 @@ EXTERNAL_LOGGERS: Final[Sequence[str]] = (
     # FastAPI and Uvicorn
     # -------------------
     "uvicorn",
-    "uvicorn.access",
     "uvicorn.error",
     "fastapi",
     # -------------------
@@ -44,12 +43,10 @@ EXTERNAL_LOGGERS: Final[Sequence[str]] = (
     # -------------------
     # Security
     # -------------------
+    "bcrypt",
     "cryptography",
 )
-DISABLED_LOGGERS: Final[Sequence[str]] = (
-    "uvicorn.access",
-    "bcrypt",
-)
+DISABLED_LOGGERS: Final[Sequence[str]] = ("uvicorn.access",)
 
 
 # ===========================================================================

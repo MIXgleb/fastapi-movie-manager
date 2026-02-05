@@ -1,10 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import ClassVar
 
 
 class BasePasswordHelper(ABC):
-    pwd_context: ClassVar
-
     @classmethod
     @abstractmethod
     def verify(

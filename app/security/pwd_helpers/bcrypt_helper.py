@@ -1,14 +1,12 @@
 from typing import final, override
 
-from passlib.context import CryptContext
+import bcrypt
 
 from app.security.pwd_helpers.base import BasePasswordHelper
 
 
 @final
 class BcryptPasswordHelper(BasePasswordHelper):
-    pwd_context = CryptContext(schemes=["bcrypt"])
-
     @classmethod
     @override
     def verify(
@@ -16,7 +14,10 @@ class BcryptPasswordHelper(BasePasswordHelper):
         plain_password: str,
         hashed_password: str,
     ) -> bool:
-        return cls.pwd_context.verify(plain_password, hashed_password)
+        return bcrypt.checkpw(
+            password=plain_password.encode("utf-8"),
+            hashed_password=hashed_password.encode("utf-8"),
+        )
 
     @classmethod
     @override
@@ -24,4 +25,7 @@ class BcryptPasswordHelper(BasePasswordHelper):
         cls,
         password: str,
     ) -> str:
-        return cls.pwd_context.hash(password)
+        return bcrypt.hashpw(
+            password=password.encode("utf-8"),
+            salt=bcrypt.gensalt(),
+        ).decode("utf-8")
