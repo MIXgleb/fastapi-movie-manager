@@ -7,13 +7,14 @@ services:
     env_file:
       - .env
     environment:
-      DEBUG: ${DEBUG:-false}
       APP__HOST: app
       APP__PORT: 8000
       DB__HOST: postgres
       DB__PORT: 5432
       REDIS__HOST: redis
       REDIS__PORT: 6379
+    volumes:
+      - app_logs:/movie_manager/${LOGGING__LOG_FOLDER}:rw
     ports:
       - ${APP__PORT}:8000
     networks:
@@ -51,6 +52,8 @@ services:
     container_name: redis
     environment:
       REDIS_DATABASES: 5
+    volumes:
+      - redis_data:/data
     ports:
       - ${REDIS__PORT}:6379
     networks:
@@ -71,9 +74,8 @@ services:
       POSTGRES_USER: ${DB__USERNAME}
       POSTGRES_PASSWORD: ${DB__PASSWORD}
       PGDATA: /var/lib/postgresql/data/
-    # volumes:
-      # - .:/docker-entrypoint-initdb.d
-      # - pg_data:/var/lib/postgresql/data
+    volumes:
+      - pg_data:/var/lib/postgresql/data
     ports:
       - ${DB__PORT}:5432
     networks:
@@ -88,8 +90,15 @@ services:
 
 volumes:
   pg_data:
+
   redis_data:
 
+  app_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOCAL_STORAGE}/logs
 
 networks:
   backend:
