@@ -32,7 +32,10 @@ class BaseExceptionHandler(ABC):
         raise NotImplementedError
 
     @classmethod
-    def _get_request_params(cls, request: Request) -> tuple[Method, Path, Address]:
+    def _get_request_params(
+        cls,
+        request: Request,
+    ) -> tuple[Method, Path, Address]:
         method = request.method
         path = str(request.url)
         address_params = request.client

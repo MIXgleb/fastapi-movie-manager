@@ -102,7 +102,10 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         )
 
     @classmethod
-    def _get_request_params(cls, request: Request) -> tuple[Method, Path, Address]:
+    def _get_request_params(
+        cls,
+        request: Request,
+    ) -> tuple[Method, Path, Address]:
         method = request.method
         path = request.url.path
         address_params = request.client

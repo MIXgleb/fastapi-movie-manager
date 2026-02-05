@@ -100,5 +100,8 @@ class DatabaseSessionError(OSError):
 
 
 class ImmutableValueError(ValueError):
-    def __init__(self, field: str) -> None:
+    def __init__(
+        self,
+        field: str,
+    ) -> None:
         super().__init__(f"Field {field!r} is immutable and cannot be modified.")
