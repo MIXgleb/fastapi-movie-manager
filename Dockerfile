@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 ENV PYTHONUNBUFFERED=1
 
-WORKDIR /movie_manager
+WORKDIR /movies
 
 # Install uv
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
@@ -13,9 +13,9 @@ COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /uvx /bin/
 
 # Place executables in the environment at the front of the path
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#using-the-environment
-ENV PATH="/movie_manager/.venv/bin:$PATH"
+ENV PATH="/movies/.venv/bin:$PATH"
 
-ENV PYTHONPATH="/movie_manager"
+ENV PYTHONPATH="/movies"
 
 # Compile bytecode
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#compiling-bytecode

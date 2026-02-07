@@ -26,7 +26,7 @@ from app.lifespan import lifespan
 # ===========================================================================
 app = FastAPI(
     debug=DEBUG,
-    title="Movie manager",
+    title="FastAPI movies",
     default_response_class=ORJSONResponse,
     lifespan=lifespan,
     openapi_url=f"{settings.api.internal.prefix}/openapi.json",

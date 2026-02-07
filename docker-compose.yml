@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: fastapi-movie-manager
+    container_name: fastapi-movies
     env_file:
       - .env
     environment:
@@ -36,7 +36,7 @@ services:
 
   app-cli:
     extends: app
-    container_name: fastapi-movie-manager-cli
+    container_name: fastapi-movies-cli
     environment:
       AUTO_REMOVAL: true
     volumes:
