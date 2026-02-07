@@ -76,7 +76,6 @@ class _TokenConfig(BaseModel):
 class _RedisConfig(BaseModel):
     host: str
     port: int
-    db_request_limiter: int
     db_refresh_token: int
     encoding: str = "utf8"
 

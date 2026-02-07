@@ -1,9 +1,7 @@
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-import redis.asyncio as redis
 from fastapi import FastAPI
-from fastapi_limiter import FastAPILimiter
 from loguru import logger
 
 from app.core import settings
@@ -32,18 +30,6 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
     # ===========================================================================
     logger.info("🚀 Application starting up...")
     # ===========================================================================
-    # ---------------------------------------------------------------------------
-    # Redis
-    # ---------------------------------------------------------------------------
-    logger.info("Connecting to redis...")
-    redis_connection = redis.Redis(
-        host=settings.redis.host,
-        port=settings.redis.port,
-        db=settings.redis.db_request_limiter,
-        encoding=settings.redis.encoding,
-    )
-    await redis_connection.ping()  # type: ignore[reportGeneralTypeIssues]
-    logger.info("Connection to redis complete.")
 
     # ---------------------------------------------------------------------------
     # Database
@@ -53,12 +39,6 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
     await db.init(str(settings.db.url))
     logger.info("Connection to database complete.")
 
-    # ---------------------------------------------------------------------------
-    # FastAPI Limiter
-    # ---------------------------------------------------------------------------
-    logger.info("Initializing the FastAPI Limiter...")
-    await FastAPILimiter.init(redis_connection)
-    logger.info("FastAPI Limiter initialization complete.")
     # ===========================================================================
 
     yield
@@ -66,12 +46,6 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
     # ===========================================================================
     logger.info("🛑 Application shutting down...")
     # ===========================================================================
-    # ---------------------------------------------------------------------------
-    # FastAPI Limiter
-    # ---------------------------------------------------------------------------
-    logger.info("Closing the FastAPI limiter...")
-    await FastAPILimiter.close()
-    logger.info("FastAPI limiter closure complete.")
 
     # ---------------------------------------------------------------------------
     # Database
