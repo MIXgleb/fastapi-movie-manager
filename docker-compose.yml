@@ -14,7 +14,9 @@ services:
       REDIS__HOST: redis
       REDIS__PORT: 6379
     volumes:
-      - app_logs:/movie_manager/${LOGGING__LOG_FOLDER}:rw
+      - type: volume
+        source: app_logs
+        target: $PWD/${LOGGING__LOG_FOLDER}
     ports:
       - ${APP__PORT}:8000
     networks:
@@ -53,7 +55,9 @@ services:
     environment:
       REDIS_DATABASES: 5
     volumes:
-      - redis_data:/data
+      - type: volume
+        source: redis_data
+        target: /data
     ports:
       - ${REDIS__PORT}:6379
     networks:
@@ -75,7 +79,9 @@ services:
       POSTGRES_PASSWORD: ${DB__PASSWORD}
       PGDATA: /var/lib/postgresql/data/
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - type: volume
+        source: pg_data
+        target: /var/lib/postgresql/data
     ports:
       - ${DB__PORT}:5432
     networks:
