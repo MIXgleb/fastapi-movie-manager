@@ -1,7 +1,12 @@
 import logging
-from typing import final, override
+from typing import (
+    final,
+    override,
+)
 
-from loguru import logger
+from loguru import (
+    logger,
+)
 
 
 @final

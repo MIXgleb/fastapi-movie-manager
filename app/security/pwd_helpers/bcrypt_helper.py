@@ -1,8 +1,13 @@
-from typing import final, override
+from typing import (
+    final,
+    override,
+)
 
 import bcrypt
 
-from app.security.pwd_helpers.base import BasePasswordHelper
+from app.security.pwd_helpers.base import (
+    BasePasswordHelper,
+)
 
 
 @final

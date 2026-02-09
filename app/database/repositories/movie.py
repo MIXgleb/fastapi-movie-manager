@@ -1,16 +1,29 @@
-from abc import abstractmethod
-from collections.abc import Sequence
-from typing import final, override
+from abc import (
+    abstractmethod,
+)
+from collections.abc import (
+    Sequence,
+)
+from typing import (
+    final,
+    override,
+)
 
-from sqlalchemy import Select
+from sqlalchemy import (
+    Select,
+)
 
 import app.core.exceptions as exc
-from app.database.models import Movie
+from app.database.models import (
+    Movie,
+)
 from app.database.repositories.base import (
     BaseDatabaseRepository,
     BaseSqlAlchemyRepository,
 )
-from app.domains import MovieFilterDM
+from app.domains import (
+    MovieFilterDM,
+)
 
 
 class BaseMovieRepository(

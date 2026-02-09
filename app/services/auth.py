@@ -1,17 +1,37 @@
-from abc import abstractmethod
-from typing import final, override
+from abc import (
+    abstractmethod,
+)
+from typing import (
+    Any,
+    final,
+    override,
+)
 
-from fastapi import Request, Response
+from fastapi import (
+    Request,
+    Response,
+)
 
 import app.core.exceptions as exc
-from app.api.v1.schemas import UserCreateDTO, UserInputDTO
-from app.domains import UserRole
+from app.api.v1.schemas import (
+    UserCreateDTO,
+    UserInputDTO,
+)
+from app.database import (
+    BaseUOW,
+)
+from app.domains import (
+    UserRole,
+)
 from app.security import (
     Payload,
     password_helper,
     token_helper,
 )
-from app.services.base import BaseService, BaseSqlAlchemyService
+from app.services.base import (
+    BaseService,
+    BaseSqlAlchemyService,
+)
 
 
 class BaseAuthService(BaseService):

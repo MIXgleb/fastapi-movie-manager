@@ -1,6 +1,10 @@
-from typing import final
+from typing import (
+    final,
+)
 
-from fastapi.middleware.cors import CORSMiddleware as BaseCORSMiddleware
+from fastapi.middleware.cors import (
+    CORSMiddleware as BaseCORSMiddleware,
+)
 
 
 @final

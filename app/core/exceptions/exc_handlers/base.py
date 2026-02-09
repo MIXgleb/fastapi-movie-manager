@@ -1,6 +1,12 @@
-from abc import ABC, abstractmethod
+from abc import (
+    ABC,
+    abstractmethod,
+)
 
-from fastapi import Request, Response
+from fastapi import (
+    Request,
+    Response,
+)
 
 type Method = str
 type Path = str

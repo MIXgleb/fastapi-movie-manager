@@ -1,9 +1,22 @@
-from abc import ABC, abstractmethod
-from types import TracebackType
-from typing import ClassVar, Self
+from abc import (
+    ABC,
+    abstractmethod,
+)
+from types import (
+    TracebackType,
+)
+from typing import (
+    ClassVar,
+    Self,
+)
 
-from app.database.db_helpers import BaseDatabaseHelper
-from app.database.repositories import BaseMovieRepository, BaseUserRepository
+from app.database.db_helpers import (
+    BaseDatabaseHelper,
+)
+from app.database.repositories import (
+    BaseMovieRepository,
+    BaseUserRepository,
+)
 
 
 class BaseUOW(ABC):

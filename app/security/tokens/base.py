@@ -1,11 +1,22 @@
-from abc import ABC, abstractmethod
-from typing import Any, ClassVar, final
+from abc import (
+    ABC,
+    abstractmethod,
+)
+from typing import (
+    Any,
+    ClassVar,
+    final,
+)
 
 import jwt
-from fastapi import Response
+from fastapi import (
+    Response,
+)
 
 import app.core.exceptions as exc
-from app.core import settings
+from app.core import (
+    settings,
+)
 
 type TypeJWToken = str
 type TypeDictAnyAny = dict[Any, Any]

@@ -1,14 +1,31 @@
-from typing import ClassVar, final, override
+from typing import (
+    ClassVar,
+    final,
+    override,
+)
 
 import jwt
 import redis.asyncio as redis
-from cryptography.fernet import Fernet
-from fastapi import Response
+from cryptography.fernet import (
+    Fernet,
+)
+from fastapi import (
+    Response,
+)
 
 import app.core.exceptions as exc
-from app.core import settings
-from app.security.token_schemas import JWTokenPayload, Payload, TokenKey
-from app.security.tokens.base import BaseAsyncToken, BaseJWToken
+from app.core import (
+    settings,
+)
+from app.security.token_schemas import (
+    JWTokenPayload,
+    Payload,
+    TokenKey,
+)
+from app.security.tokens.base import (
+    BaseAsyncToken,
+    BaseJWToken,
+)
 
 type TypeEncryptedUserID = str
 

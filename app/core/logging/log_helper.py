@@ -1,9 +1,17 @@
-from collections.abc import Sequence
-from pathlib import Path
+from collections.abc import (
+    Sequence,
+)
+from pathlib import (
+    Path,
+)
 
-from loguru import logger
+from loguru import (
+    logger,
+)
 
-from app.core import settings
+from app.core import (
+    settings,
+)
 from app.core.logging.loggers import (
     common_logger,
     error_logger,

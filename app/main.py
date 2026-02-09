@@ -1,11 +1,27 @@
-from fastapi import FastAPI
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import ORJSONResponse
-from sqlalchemy.exc import SQLAlchemyError
-from starlette.exceptions import HTTPException
+from fastapi import (
+    FastAPI,
+)
+from fastapi.exceptions import (
+    RequestValidationError,
+)
+from fastapi.responses import (
+    ORJSONResponse,
+)
+from sqlalchemy.exc import (
+    SQLAlchemyError,
+)
+from starlette.exceptions import (
+    HTTPException,
+)
 
-from app.api import api_v1_router, internal_router
-from app.core import DEBUG, settings
+from app.api import (
+    api_v1_router,
+    internal_router,
+)
+from app.core import (
+    DEBUG,
+    settings,
+)
 from app.core.exceptions import (
     database_exception_handler,
     global_exception_handler,
@@ -18,8 +34,12 @@ from app.core.middlewares import (
     ExceptionMiddleware,
     LoggingMiddleware,
 )
-from app.core.typing import ExcludedLogRequest
-from app.lifespan import lifespan
+from app.core.typing import (
+    ExcludedLogRequest,
+)
+from app.lifespan import (
+    lifespan,
+)
 
 # ===========================================================================
 # FastAPI application

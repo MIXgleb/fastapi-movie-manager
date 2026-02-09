@@ -1,6 +1,10 @@
-from typing import final
+from typing import (
+    final,
+)
 
-from starlette.middleware.exceptions import ExceptionMiddleware as BaseExceptionMiddleware
+from starlette.middleware.exceptions import (
+    ExceptionMiddleware as BaseExceptionMiddleware,
+)
 
 
 @final

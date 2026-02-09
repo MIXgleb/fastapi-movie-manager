@@ -1,8 +1,12 @@
 import os
 import subprocess
 import sys
-from pathlib import Path
-from typing import Final
+from pathlib import (
+    Path,
+)
+from typing import (
+    Final,
+)
 
 SCRIPTS_ROOT: Final[Path] = Path(__file__).parent  # current directory
 PYTHON_PATH: Final[Path] = Path(os.getenv("PYTHONPATH", "/app"))

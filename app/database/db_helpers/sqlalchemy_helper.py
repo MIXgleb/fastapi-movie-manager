@@ -1,5 +1,10 @@
-from collections.abc import AsyncGenerator
-from typing import final, override
+from collections.abc import (
+    AsyncGenerator,
+)
+from typing import (
+    final,
+    override,
+)
 
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -9,8 +14,12 @@ from sqlalchemy.ext.asyncio import (
 )
 
 import app.core.exceptions as exc
-from app.core import settings
-from app.database.db_helpers.base import BaseDatabaseHelper
+from app.core import (
+    settings,
+)
+from app.database.db_helpers.base import (
+    BaseDatabaseHelper,
+)
 
 
 @final

@@ -4,7 +4,11 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
 )
 
-from app.database import BaseDatabaseHelper, BaseDatabaseUOW, BaseUOW
+from app.database import (
+    BaseDatabaseHelper,
+    BaseDatabaseUOW,
+    BaseUOW,
+)
 
 
 class BaseService:

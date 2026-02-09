@@ -1,7 +1,16 @@
 import functools
-from abc import ABC, abstractmethod
-from collections.abc import AsyncGenerator
-from typing import ClassVar, Self, final
+from abc import (
+    ABC,
+    abstractmethod,
+)
+from collections.abc import (
+    AsyncGenerator,
+)
+from typing import (
+    ClassVar,
+    Self,
+    final,
+)
 
 import app.core.exceptions as exc
 

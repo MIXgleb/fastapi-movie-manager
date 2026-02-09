@@ -1,9 +1,18 @@
 import logging
-from collections.abc import Sequence
-from typing import final, override
+from collections.abc import (
+    Sequence,
+)
+from typing import (
+    final,
+    override,
+)
 
-from app.core.logging.interceptions import InterceptHandler
-from app.core.logging.loggers.base import BaseLogger
+from app.core.logging.interceptions import (
+    InterceptHandler,
+)
+from app.core.logging.loggers.base import (
+    BaseLogger,
+)
 
 
 @final

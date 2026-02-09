@@ -1,8 +1,16 @@
-from typing import Never
+from typing import (
+    Never,
+)
 
-from sqlalchemy.orm import Mapped, mapped_column, validates
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    validates,
+)
 
-from app.core.exceptions import ImmutableValueError
+from app.core.exceptions import (
+    ImmutableValueError,
+)
 
 
 class IntIdPkMixin:

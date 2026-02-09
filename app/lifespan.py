@@ -1,16 +1,30 @@
-from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
+from collections.abc import (
+    AsyncGenerator,
+)
+from contextlib import (
+    asynccontextmanager,
+)
 
-from fastapi import FastAPI
-from loguru import logger
+from fastapi import (
+    FastAPI,
+)
+from loguru import (
+    logger,
+)
 
-from app.core import settings
+from app.core import (
+    settings,
+)
 from app.core.constants import (
     DISABLED_LOGGERS,
     EXTERNAL_LOGGERS,
 )
-from app.core.logging import setup_logger
-from app.database import SqlAlchemyDatabaseHelper
+from app.core.logging import (
+    setup_logger,
+)
+from app.database import (
+    SqlAlchemyDatabaseHelper,
+)
 
 
 @asynccontextmanager

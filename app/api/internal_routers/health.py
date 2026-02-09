@@ -1,5 +1,10 @@
-from fastapi import APIRouter, Response
-from fastapi.responses import ORJSONResponse
+from fastapi import (
+    APIRouter,
+    Response,
+)
+from fastapi.responses import (
+    ORJSONResponse,
+)
 
 router = APIRouter(tags=["Health"])
 

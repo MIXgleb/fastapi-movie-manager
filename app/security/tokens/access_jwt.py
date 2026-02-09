@@ -1,12 +1,27 @@
-from typing import final, override
+from typing import (
+    final,
+    override,
+)
 
 import jwt
-from fastapi import Response
+from fastapi import (
+    Response,
+)
 
 import app.core.exceptions as exc
-from app.core import settings
-from app.security.token_schemas import JWTokenPayload, Payload, TokenKey
-from app.security.tokens.base import BaseJWToken, BaseSyncToken, TypeJWToken
+from app.core import (
+    settings,
+)
+from app.security.token_schemas import (
+    JWTokenPayload,
+    Payload,
+    TokenKey,
+)
+from app.security.tokens.base import (
+    BaseJWToken,
+    BaseSyncToken,
+    TypeJWToken,
+)
 
 
 @final

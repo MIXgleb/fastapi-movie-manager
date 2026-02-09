@@ -7,9 +7,15 @@ __all__ = (
     "UserRole",
 )
 
-from typing import ClassVar, Protocol
+from typing import (
+    ClassVar,
+    Protocol,
+)
 
-from app.domains.movie import MovieDM, MovieFilterDM
+from app.domains.movie import (
+    MovieDM,
+    MovieFilterDM,
+)
 from app.domains.user import (
     TypeUserRole,
     UserDM,

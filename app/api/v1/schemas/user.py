@@ -1,12 +1,20 @@
-from datetime import datetime
+from datetime import (
+    datetime,
+)
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+)
 
 from app.core.constants import (
     USER_PASSWORD_INPUT_FIELD,
     USER_USERNAME_INPUT_FIELD,
 )
-from app.domains import TypeUserRole
+from app.domains import (
+    TypeUserRole,
+)
 
 
 class UserBaseModel(BaseModel):

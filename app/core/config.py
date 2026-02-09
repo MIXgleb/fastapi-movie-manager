@@ -1,6 +1,10 @@
 import functools
-from datetime import timedelta
-from typing import Final
+from datetime import (
+    timedelta,
+)
+from typing import (
+    Final,
+)
 
 from pydantic import (
     BaseModel,
@@ -8,7 +12,10 @@ from pydantic import (
     computed_field,
     field_validator,
 )
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings,
+    SettingsConfigDict,
+)
 
 
 class _LoggerConfig(BaseModel):

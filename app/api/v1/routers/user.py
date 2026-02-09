@@ -1,5 +1,9 @@
-from collections.abc import Sequence
-from typing import Annotated
+from collections.abc import (
+    Sequence,
+)
+from typing import (
+    Annotated,
+)
 
 from fastapi import (
     APIRouter,
@@ -11,8 +15,12 @@ from fastapi import (
     Response,
     status,
 )
-from fastapi.responses import RedirectResponse
-from pydantic import BaseModel
+from fastapi.responses import (
+    RedirectResponse,
+)
+from pydantic import (
+    BaseModel,
+)
 
 from app.api.v1.dependencies import (
     UserOwnership,
@@ -25,9 +33,15 @@ from app.api.v1.schemas import (
     UserOutputDTO,
     UserUpdateDTO,
 )
-from app.core import settings
-from app.domains import UserRole
-from app.security import PayloadFromToken
+from app.core import (
+    settings,
+)
+from app.domains import (
+    UserRole,
+)
+from app.security import (
+    PayloadFromToken,
+)
 from app.services import (
     BaseUserService,
     SqlAlchemyServiceHelper,

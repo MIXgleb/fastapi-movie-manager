@@ -1,16 +1,39 @@
 import time
-from collections.abc import Sequence
-from fnmatch import fnmatch
-from functools import lru_cache
-from typing import final, override
+from collections.abc import (
+    Sequence,
+)
+from fnmatch import (
+    fnmatch,
+)
+from functools import (
+    lru_cache,
+)
+from typing import (
+    final,
+    override,
+)
 
-from fastapi import Request, Response
-from loguru import logger
-from starlette.datastructures import Address as Client
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
-from starlette.types import ASGIApp
+from fastapi import (
+    Request,
+    Response,
+)
+from loguru import (
+    logger,
+)
+from starlette.datastructures import (
+    Address as Client,
+)
+from starlette.middleware.base import (
+    BaseHTTPMiddleware,
+    RequestResponseEndpoint,
+)
+from starlette.types import (
+    ASGIApp,
+)
 
-from app.core.typing import ExcludedLogRequest
+from app.core.typing import (
+    ExcludedLogRequest,
+)
 
 type Method = str
 type Path = str

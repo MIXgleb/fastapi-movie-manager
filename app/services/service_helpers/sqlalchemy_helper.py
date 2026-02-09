@@ -1,4 +1,6 @@
-from typing import final
+from typing import (
+    final,
+)
 
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -6,9 +8,16 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
 )
 
-from app.database import SqlAlchemyDatabaseHelper, SqlAlchemyUOW
-from app.services.base import BaseSqlAlchemyService
-from app.services.service_helpers.base import BaseDatabaseServiceHelper
+from app.database import (
+    SqlAlchemyDatabaseHelper,
+    SqlAlchemyUOW,
+)
+from app.services.base import (
+    BaseSqlAlchemyService,
+)
+from app.services.service_helpers.base import (
+    BaseDatabaseServiceHelper,
+)
 
 
 @final

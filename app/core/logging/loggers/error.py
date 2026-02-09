@@ -1,9 +1,19 @@
-from typing import final, override
+from typing import (
+    final,
+    override,
+)
 
-from loguru import logger
+from loguru import (
+    logger,
+)
 
-from app.core import DEBUG, settings
-from app.core.logging.loggers.base import BaseLogger
+from app.core import (
+    DEBUG,
+    settings,
+)
+from app.core.logging.loggers.base import (
+    BaseLogger,
+)
 
 
 @final

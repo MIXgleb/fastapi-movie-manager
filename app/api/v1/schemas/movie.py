@@ -1,6 +1,12 @@
-from datetime import datetime
+from datetime import (
+    datetime,
+)
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+)
 
 from app.core.constants import (
     MOVIE_DESCRIPTION_INPUT_FIELD,

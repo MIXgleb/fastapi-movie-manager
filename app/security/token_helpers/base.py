@@ -1,11 +1,25 @@
-from abc import ABC, abstractmethod
-from typing import Any
+from abc import (
+    ABC,
+    abstractmethod,
+)
+from typing import (
+    Any,
+)
 
-from fastapi import Request, Response
+from fastapi import (
+    Request,
+    Response,
+)
 
-from app.security.token_repositories import BaseTokenRepository
-from app.security.token_schemas import TokenBaseModel
-from app.security.tokens import BaseToken
+from app.security.token_repositories import (
+    BaseTokenRepository,
+)
+from app.security.token_schemas import (
+    TokenBaseModel,
+)
+from app.security.tokens import (
+    BaseToken,
+)
 
 
 class BaseTokenHelper[

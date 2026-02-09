@@ -2,7 +2,9 @@ import sys
 
 import redis
 
-from app.core.config import settings
+from app.core.config import (
+    settings,
+)
 
 
 def check_connection() -> tuple[bool, str]:

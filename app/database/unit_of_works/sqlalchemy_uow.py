@@ -1,5 +1,11 @@
-from types import TracebackType
-from typing import Self, final, override
+from types import (
+    TracebackType,
+)
+from typing import (
+    Self,
+    final,
+    override,
+)
 
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -8,8 +14,13 @@ from sqlalchemy.ext.asyncio import (
 )
 
 import app.core.exceptions as exc
-from app.database.repositories import MovieRepository, UserRepository
-from app.database.unit_of_works.base import BaseDatabaseUOW
+from app.database.repositories import (
+    MovieRepository,
+    UserRepository,
+)
+from app.database.unit_of_works.base import (
+    BaseDatabaseUOW,
+)
 
 
 @final

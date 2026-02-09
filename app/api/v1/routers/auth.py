@@ -1,4 +1,6 @@
-from typing import Annotated
+from typing import (
+    Annotated,
+)
 
 from fastapi import (
     APIRouter,
@@ -8,7 +10,9 @@ from fastapi import (
     Response,
     status,
 )
-from pydantic import BaseModel
+from pydantic import (
+    BaseModel,
+)
 
 from app.api.v1.schemas import (
     LoginResponse,
@@ -16,7 +20,9 @@ from app.api.v1.schemas import (
     RegisterResponse,
     UserInputDTO,
 )
-from app.core import settings
+from app.core import (
+    settings,
+)
 from app.services import (
     AuthService,
     BaseAuthService,

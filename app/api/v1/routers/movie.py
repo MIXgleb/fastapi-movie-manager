@@ -1,5 +1,9 @@
-from collections.abc import Sequence
-from typing import Annotated
+from collections.abc import (
+    Sequence,
+)
+from typing import (
+    Annotated,
+)
 
 from fastapi import (
     APIRouter,
@@ -9,7 +13,9 @@ from fastapi import (
     Query,
     status,
 )
-from pydantic import BaseModel
+from pydantic import (
+    BaseModel,
+)
 
 from app.api.v1.dependencies import (
     dep_movie_ownership_getter,
@@ -24,9 +30,15 @@ from app.api.v1.schemas import (
     MovieUpdateDTO,
     UpdateMovieResponse,
 )
-from app.core import settings
-from app.domains import UserRole
-from app.security import PayloadFromToken
+from app.core import (
+    settings,
+)
+from app.domains import (
+    UserRole,
+)
+from app.security import (
+    PayloadFromToken,
+)
 from app.services import (
     BaseMovieService,
     MovieService,

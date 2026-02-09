@@ -1,5 +1,8 @@
 import functools
-from datetime import UTC, datetime
+from datetime import (
+    UTC,
+    datetime,
+)
 from typing import (
     Any,
     ClassVar,
@@ -16,8 +19,13 @@ from pydantic import (
     model_validator,
 )
 
-from app.core import settings
-from app.domains import TypeUserRole, UserRole
+from app.core import (
+    settings,
+)
+from app.domains import (
+    TypeUserRole,
+    UserRole,
+)
 
 type TypeToken = Literal["access_token", "refresh_token"]
 

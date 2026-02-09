@@ -1,7 +1,14 @@
-from typing import final, override
+from typing import (
+    final,
+    override,
+)
 
-from app.security.token_repositories.base import BaseSyncAsyncTokenRepository
-from app.security.token_schemas import Payload
+from app.security.token_repositories.base import (
+    BaseSyncAsyncTokenRepository,
+)
+from app.security.token_schemas import (
+    Payload,
+)
 
 
 @final

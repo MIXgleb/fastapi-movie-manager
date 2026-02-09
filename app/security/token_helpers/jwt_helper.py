@@ -1,17 +1,32 @@
-from typing import Annotated, final, override
+from typing import (
+    Annotated,
+    final,
+    override,
+)
 
-from fastapi import Depends, Request, Response
+from fastapi import (
+    Depends,
+    Request,
+    Response,
+)
 
 import app.core.exceptions as exc
-from app.security.token_helpers.base import BaseTokenHelper
-from app.security.token_repositories import JWTokenRepository
+from app.security.token_helpers.base import (
+    BaseTokenHelper,
+)
+from app.security.token_repositories import (
+    JWTokenRepository,
+)
 from app.security.token_schemas import (
     JWTokenReadDTO,
     Payload,
     TokenKey,
     UserRole,
 )
-from app.security.tokens import AccessJWToken, RefreshJWToken
+from app.security.tokens import (
+    AccessJWToken,
+    RefreshJWToken,
+)
 
 _guest_payload = Payload(user_id=0, user_role=UserRole.guest)
 

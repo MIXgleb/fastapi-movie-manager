@@ -1,14 +1,34 @@
-from typing import final, override
+from typing import (
+    final,
+    override,
+)
 
-from fastapi import Request, Response
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import ORJSONResponse
-from loguru import logger
-from sqlalchemy.exc import SQLAlchemyError
-from starlette.exceptions import HTTPException
+from fastapi import (
+    Request,
+    Response,
+)
+from fastapi.encoders import (
+    jsonable_encoder,
+)
+from fastapi.responses import (
+    ORJSONResponse,
+)
+from loguru import (
+    logger,
+)
+from sqlalchemy.exc import (
+    SQLAlchemyError,
+)
+from starlette.exceptions import (
+    HTTPException,
+)
 
-from app.core.constants import HTTP_RESPONSE_500
-from app.core.exceptions.exc_handlers.base import BaseExceptionHandler
+from app.core.constants import (
+    HTTP_RESPONSE_500,
+)
+from app.core.exceptions.exc_handlers.base import (
+    BaseExceptionHandler,
+)
 
 
 @final

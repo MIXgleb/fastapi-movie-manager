@@ -1,11 +1,24 @@
-from typing import final, override
+from typing import (
+    final,
+    override,
+)
 
-from fastapi import Depends, params
+from fastapi import (
+    Depends,
+    params,
+)
 
 import app.core.exceptions as exc
-from app.api.v1.dependencies.base import BaseDependency
-from app.domains import TypeUserRole, UserRole
-from app.security import PayloadFromToken
+from app.api.v1.dependencies.base import (
+    BaseDependency,
+)
+from app.domains import (
+    TypeUserRole,
+    UserRole,
+)
+from app.security import (
+    PayloadFromToken,
+)
 
 
 @final

@@ -1,8 +1,19 @@
-from typing import override
+from typing import (
+    override,
+)
 
-from fastapi import Depends, params
-from fastapi_limiter.depends import RateLimiter
-from pyrate_limiter import Duration, Limiter, Rate
+from fastapi import (
+    Depends,
+    params,
+)
+from fastapi_limiter.depends import (
+    RateLimiter,
+)
+from pyrate_limiter import (
+    Duration,
+    Limiter,
+    Rate,
+)
 
 
 class _FastAPIRateLimiter(RateLimiter):

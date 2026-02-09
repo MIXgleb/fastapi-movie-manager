@@ -1,10 +1,22 @@
-from typing import final, override
+from typing import (
+    final,
+    override,
+)
 
-from fastapi import Request, Response
-from loguru import logger
+from fastapi import (
+    Request,
+    Response,
+)
+from loguru import (
+    logger,
+)
 
-from app.core.constants import HTTP_RESPONSE_500
-from app.core.exceptions.exc_handlers.base import BaseExceptionHandler
+from app.core.constants import (
+    HTTP_RESPONSE_500,
+)
+from app.core.exceptions.exc_handlers.base import (
+    BaseExceptionHandler,
+)
 
 
 @final

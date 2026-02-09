@@ -10,8 +10,12 @@ from app.core.exceptions.exc_handlers.common_handlers import (
     DatabaseExceptionHandler,
     HTTPExceptionHandler,
 )
-from app.core.exceptions.exc_handlers.global_handler import GlobalExceptionHandler
-from app.core.exceptions.exc_handlers.validation_handler import ValidationExceptionHandler
+from app.core.exceptions.exc_handlers.global_handler import (
+    GlobalExceptionHandler,
+)
+from app.core.exceptions.exc_handlers.validation_handler import (
+    ValidationExceptionHandler,
+)
 
 database_exception_handler = DatabaseExceptionHandler()
 global_exception_handler = GlobalExceptionHandler()

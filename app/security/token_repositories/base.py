@@ -1,11 +1,26 @@
 import asyncio
-from abc import ABC, abstractmethod
-from typing import Any, final, override
+from abc import (
+    ABC,
+    abstractmethod,
+)
+from typing import (
+    Any,
+    final,
+    override,
+)
 
-from fastapi import Response
+from fastapi import (
+    Response,
+)
 
-from app.security.token_schemas import TokenBaseModel
-from app.security.tokens import BaseAsyncToken, BaseSyncToken, BaseToken
+from app.security.token_schemas import (
+    TokenBaseModel,
+)
+from app.security.tokens import (
+    BaseAsyncToken,
+    BaseSyncToken,
+    BaseToken,
+)
 
 type TypeSyncOrAsyncToken[Token, TokenKey, Payload] = (
     BaseSyncToken[Token, TokenKey, Payload] | BaseAsyncToken[Token, TokenKey, Payload]

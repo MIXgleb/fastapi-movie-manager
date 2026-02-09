@@ -1,9 +1,22 @@
-from abc import abstractmethod
-from collections.abc import Sequence
-from datetime import UTC, datetime
-from typing import final, override
+from abc import (
+    abstractmethod,
+)
+from collections.abc import (
+    Sequence,
+)
+from datetime import (
+    UTC,
+    datetime,
+)
+from typing import (
+    final,
+    override,
+)
 
-from fastapi import Request, Response
+from fastapi import (
+    Request,
+    Response,
+)
 
 import app.core.exceptions as exc
 from app.api.v1.schemas import (
@@ -12,14 +25,22 @@ from app.api.v1.schemas import (
     UserUpdateDTO,
     UserUpdateWithHashedPasswordDTO,
 )
-from app.core.constants import MESSAGE_USER_NOT_FOUND
-from app.domains import UserFilterDM, UserRole
+from app.core.constants import (
+    MESSAGE_USER_NOT_FOUND,
+)
+from app.domains import (
+    UserFilterDM,
+    UserRole,
+)
 from app.security import (
     Payload,
     password_helper,
     token_helper,
 )
-from app.services.base import BaseService, BaseSqlAlchemyService
+from app.services.base import (
+    BaseService,
+    BaseSqlAlchemyService,
+)
 
 
 class BaseUserService(BaseService):

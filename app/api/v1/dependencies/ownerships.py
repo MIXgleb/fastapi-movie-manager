@@ -1,4 +1,8 @@
-from typing import Annotated, final, override
+from typing import (
+    Annotated,
+    final,
+    override,
+)
 
 from fastapi import (
     Depends,
@@ -8,10 +12,19 @@ from fastapi import (
 )
 
 import app.core.exceptions as exc
-from app.api.v1.dependencies.base import BaseDependency
-from app.domains import UserRole
-from app.security import PayloadFromToken
-from app.services import MovieService, SqlAlchemyServiceHelper
+from app.api.v1.dependencies.base import (
+    BaseDependency,
+)
+from app.domains import (
+    UserRole,
+)
+from app.security import (
+    PayloadFromToken,
+)
+from app.services import (
+    MovieService,
+    SqlAlchemyServiceHelper,
+)
 
 UserIdFromPath = Annotated[int, Path()]
 

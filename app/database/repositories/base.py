@@ -1,12 +1,30 @@
-from abc import ABC, abstractmethod
-from collections.abc import Sequence
-from typing import Any, final, override
+from abc import (
+    ABC,
+    abstractmethod,
+)
+from collections.abc import (
+    Sequence,
+)
+from typing import (
+    Any,
+    final,
+    override,
+)
 
-from sqlalchemy import Select, select
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import (
+    Select,
+    select,
+)
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+)
+from sqlalchemy.orm import (
+    DeclarativeBase,
+)
 
-from app.domains import DataclassType
+from app.domains import (
+    DataclassType,
+)
 
 type TypeDictAnyAny = dict[Any, Any]
 

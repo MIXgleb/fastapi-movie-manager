@@ -1,16 +1,30 @@
-from abc import abstractmethod
-from collections.abc import Sequence
-from typing import final, override
+from abc import (
+    abstractmethod,
+)
+from collections.abc import (
+    Sequence,
+)
+from typing import (
+    final,
+    override,
+)
 
-from sqlalchemy import Select, select
+from sqlalchemy import (
+    Select,
+    select,
+)
 
 import app.core.exceptions as exc
-from app.database.models import User
+from app.database.models import (
+    User,
+)
 from app.database.repositories.base import (
     BaseDatabaseRepository,
     BaseSqlAlchemyRepository,
 )
-from app.domains import UserFilterDM
+from app.domains import (
+    UserFilterDM,
+)
 
 
 class BaseUserRepository(

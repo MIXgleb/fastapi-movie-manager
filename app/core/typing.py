@@ -1,6 +1,14 @@
-from collections.abc import Sequence
-from dataclasses import dataclass
-from typing import Any, Required, TypedDict
+from collections.abc import (
+    Sequence,
+)
+from dataclasses import (
+    dataclass,
+)
+from typing import (
+    Any,
+    Required,
+    TypedDict,
+)
 
 
 class DictCustomRequestValidationError(TypedDict):

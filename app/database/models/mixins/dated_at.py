@@ -1,10 +1,23 @@
-from datetime import UTC, datetime
-from typing import Never
+from datetime import (
+    UTC,
+    datetime,
+)
+from typing import (
+    Never,
+)
 
-from sqlalchemy import func
-from sqlalchemy.orm import Mapped, mapped_column, validates
+from sqlalchemy import (
+    func,
+)
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    validates,
+)
 
-from app.core.exceptions import ImmutableValueError
+from app.core.exceptions import (
+    ImmutableValueError,
+)
 
 
 def get_current_dt() -> datetime:

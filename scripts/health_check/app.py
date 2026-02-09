@@ -1,10 +1,16 @@
 import sys
-from time import sleep
-from typing import Final
+from time import (
+    sleep,
+)
+from typing import (
+    Final,
+)
 
 import httpx
 
-from app.core.config import settings
+from app.core.config import (
+    settings,
+)
 
 TIMEOUT: Final[float] = 2  # seconds
 SUCCESS_CODES: Final[set[int]] = {200}
