@@ -14,6 +14,7 @@ readonly EXCLUDED_AUTO_REMOVAL=("run")
 
 readonly UVICORN_BASE_COMMAND="uvicorn app.main:app"
 readonly ALEMBIC_BASE_COMMAND="alembic upgrade head"
+readonly VOLUMES_BASE_COMMAND="check_volumes"
 readonly SHELL_BASE_COMMAND="python"
 readonly PYTEST_BASE_COMMAND="pytest"
 readonly HEALTH_BASE_COMMAND="python -m"
@@ -117,6 +118,98 @@ print_command_with_args() {
 	echo ""
 }
 
+check_volumes() {
+	local current_dir=$(basename "$PWD")
+	local project_name="${1:-$current_dir}"
+
+	local response=$(curl -s --unix-socket $DOCKER_SOCKET_PATH \
+		"http://${DOCKER_API_VERSION}/volumes")
+
+	local volume_names=$(echo "$response" |
+		awk -F'"' '/"Name":"'"${project_name}"'_/ {
+            for(i=1; i<=NF; i++) {
+                if($i=="Name") {
+                    print $(i+2)
+                }
+            }
+        }')
+
+	if [ -z "$volume_names" ]; then
+		echo "┌─────────────────────────────────────────────────────────────"
+		echo "│  ⚠️ $(colorize "red" "No project volumes found")"
+		echo "│"
+		echo "│  🔍 $(colorize "yellow" "Specified project name"): $(colorize "green" $project_name)"
+		echo "│"
+		echo "│  💡 $(colorize "yellow" "Possible solutions:")"
+		echo "│    1. Check Docker socket: $(colorize "blue" "ls -la $DOCKER_SOCKET_PATH")"
+		echo "│    2. Check project name: $(colorize "blue" "basename \$PWD")"
+		echo "│    3. Manual inspection:"
+		echo "│      $(colorize "blue" "docker volume ls --format "{{.Name}}"")"
+		echo "│      $(colorize "blue" "docker volume inspect {volume_name}")"
+		echo "└─────────────────────────────────────────────────────────────"
+		return 0
+	fi
+
+	local volume_count=$(echo "$volume_names" | wc -l)
+
+	echo "┌─────────────────────────────────────────────────────────────"
+	echo "│  📋 $(colorize "yellow" "$volume_count volume(s) found:")"
+	echo "│"
+
+	local counter=1
+	local volume_info
+	local driver
+	local mountpoint
+	local device_path
+	local volume_type
+	local target_path
+	local volume_name
+
+	for volume_name in $volume_names; do
+		echo "│  $counter. $(colorize "green" $volume_name):"
+
+		volume_info=$(curl -s --unix-socket $DOCKER_SOCKET_PATH \
+			"http://${DOCKER_API_VERSION}/volumes/$volume_name")
+
+		driver=$(echo "$volume_info" |
+			grep -o '"Driver":"[^"]*"' |
+			head -1 |
+			sed 's/"Driver":"//; s/"//')
+		driver="${driver:-local}"
+
+		mountpoint=$(echo "$volume_info" |
+			grep -o '"Mountpoint":"[^"]*"' |
+			head -1 |
+			sed 's/"Mountpoint":"//; s/"//')
+
+		device_path=$(echo "$volume_info" |
+			grep -o '"device":"[^"]*"' |
+			head -1 |
+			sed 's/"device":"//; s/"//')
+
+		if [ -n "$device_path" ] && [ "$device_path" != "null" ]; then
+			volume_type="bind"
+			target_path="$device_path"
+		else
+			volume_type="named"
+			target_path="$mountpoint"
+		fi
+
+		echo "│    Type: $(colorize "red" $volume_type)"
+		echo "│    Driver: $(colorize "cyan" $driver)"
+
+		if [ $volume_type = "bind" ]; then
+			echo "│    Bind folder: $(colorize "blue" $target_path)"
+		else
+			echo "│    Mountpoint: $(colorize "blue" $target_path)"
+		fi
+
+		counter=$((counter + 1))
+	done
+
+	echo "└─────────────────────────────────────────────────────────────"
+}
+
 #|-----------------------------------------------------------------------------------------------
 #| COMMANDS
 #|-----------------------------------------------------------------------------------------------
@@ -131,7 +224,7 @@ echo "     🛠️ $(colorize "yellow" "Project Control Hub")"
 echo "================================"
 echo ""
 
-case "$COMMAND" in
+case $COMMAND in
 "run")
 	echo "🗄️ $(colorize "magenta" "Performing migrations...")"
 	echo ""
@@ -139,7 +232,7 @@ case "$COMMAND" in
 	$ALEMBIC_BASE_COMMAND
 
 	echo ""
-	echo "📦 $(colorize "magenta" "Launching the FastAPI application...")"
+	echo "🚀 $(colorize "magenta" "Launching the FastAPI application...")"
 
 	print_command_with_args "Service Launch Command: $(colorize "blue" $UVICORN_BASE_COMMAND)" "${@:2}"
 	$UVICORN_BASE_COMMAND "${@:2}"
@@ -152,6 +245,13 @@ case "$COMMAND" in
 	$ALEMBIC_BASE_COMMAND
 	;;
 
+"volume" | "vol")
+	echo "🗃️ $(colorize "magenta" "Checking volumes...")"
+	echo ""
+
+	$VOLUMES_BASE_COMMAND "$2"
+	;;
+
 "shell" | "python" | "py")
 	echo "🐚 $(colorize "magenta" "Launching the Python shell...")"
 	echo ""
@@ -160,7 +260,7 @@ case "$COMMAND" in
 	;;
 
 "test")
-	echo "🧪 $(colorize "magenta" "Running the tests...")"
+	echo "📊 $(colorize "magenta" "Running the tests...")"
 
 	print_command_with_args "Service Test Command: $(colorize "blue" $PYTEST_BASE_COMMAND)" "${@:2}"
 	$PYTEST_BASE_COMMAND "${@:2}"
@@ -169,7 +269,7 @@ case "$COMMAND" in
 "health")
 	SERVICE="${2:-all}"
 
-	case "$SERVICE" in
+	case $SERVICE in
 	"all" | ".")
 		$HEALTH_ALL_COMMAND
 		;;
@@ -186,15 +286,15 @@ case "$COMMAND" in
 		echo "┌─────────────────────────────────────────────────────────────"
 		echo "│  🔍 Service Health Check Command: $(colorize "cyan" "health $SERVICE")"
 		echo "│"
-		echo "│  ❌ Unknown service: $(colorize "red" "$SERVICE")"
+		echo "│  ❌ Unknown service: $(colorize "red" $SERVICE)"
 		echo "│"
-		echo "│  � $(colorize "yellow" "Available services:")"
+		echo "│  📝 $(colorize "yellow" "Available services:")"
 		echo "│    • $(colorize "cyan" "all|.")                    All services (default)"
 		echo "│    • $(colorize "cyan" "app|self|fastapi")         FastAPI application"
 		echo "│    • $(colorize "cyan" "pg|postgres|db|database")  PostgreSQL database"
 		echo "│    • $(colorize "cyan" "redis")                    Redis cache"
 		echo "│"
-		echo "│  �� Use $(colorize "cyan" "'help'") to see all available commands"
+		echo "│  💡 Use $(colorize "cyan" "'help'") to see all available commands"
 		echo "└─────────────────────────────────────────────────────────────"
 
 		EXIT_CODE=1
@@ -216,9 +316,9 @@ case "$COMMAND" in
 	echo "    2. $(colorize "green" "$UVICORN_BASE_COMMAND {args}")"
 	echo ""
 	echo "  📌 $(colorize "red" "EXAMPLES")"
-	echo "    $(colorize "blue" "docker-compose run app run")"
-	echo "    $(colorize "blue" "docker-compose run app run --reload")"
-	echo "    $(colorize "blue" "docker-compose run app run --host localhost --port 8000")"
+	echo "    $(colorize "blue" "docker-compose run app-cli run")"
+	echo "    $(colorize "blue" "docker-compose run app-cli run --reload")"
+	echo "    $(colorize "blue" "docker-compose run app-cli run --host localhost --port 8000")"
 	echo ""
 	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	echo "  $(colorize "cyan" "migrate")                    $(colorize "magenta" "Apply database migrations")"
@@ -227,7 +327,15 @@ case "$COMMAND" in
 	echo "    $(colorize "green" $ALEMBIC_BASE_COMMAND)"
 	echo ""
 	echo "  📌 $(colorize "red" "EXAMPLES")"
-	echo "    $(colorize "blue" "docker-compose run app migrate")"
+	echo "    $(colorize "blue" "docker-compose run app-cli migrate")"
+	echo ""
+	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	echo "  $(colorize "cyan" "volume|vol [arg]")         $(colorize "magenta" "Search for project volumes")"
+	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	echo "  Arguments: OPTIONAL (project name)"
+	echo ""
+	echo "  📌 $(colorize "red" "EXAMPLES")"
+	echo "    $(colorize "blue" "docker-compose run app-cli volume")"
 	echo ""
 	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	echo "  $(colorize "cyan" "shell|python|py")            $(colorize "magenta" "Launch Python interactive shell")"
@@ -236,7 +344,7 @@ case "$COMMAND" in
 	echo "    $(colorize "green" $SHELL_BASE_COMMAND)"
 	echo ""
 	echo "  📌 $(colorize "red" "EXAMPLES")"
-	echo "    $(colorize "blue" "docker-compose run app py")"
+	echo "    $(colorize "blue" "docker-compose run app-cli py")"
 	echo ""
 	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	echo "  $(colorize "cyan" "test [args...]")             $(colorize "magenta" "Run tests")"
@@ -247,8 +355,8 @@ case "$COMMAND" in
 	echo "    $(colorize "green" "$PYTEST_BASE_COMMAND {args}")"
 	echo ""
 	echo "  📌 $(colorize "red" "EXAMPLES")"
-	echo "    $(colorize "blue" "docker-compose run app test")"
-	echo "    $(colorize "blue" "docker-compose run app test tests/test_auth.py -v")"
+	echo "    $(colorize "blue" "docker-compose run app-cli test")"
+	echo "    $(colorize "blue" "docker-compose run app-cli test tests/test_auth.py -v")"
 	echo ""
 	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	echo "  $(colorize "cyan" "health [service]")           $(colorize "magenta" "Health check for services")"
@@ -262,9 +370,9 @@ case "$COMMAND" in
 	echo "    • $(colorize "cyan" "redis")                    Redis cache"
 	echo ""
 	echo "  📌 $(colorize "red" "EXAMPLES")"
-	echo "    $(colorize "blue" "docker-compose run app health")"
-	echo "    $(colorize "blue" "docker-compose run app health redis")"
-	echo "    $(colorize "blue" "docker-compose run app health self")"
+	echo "    $(colorize "blue" "docker-compose run app-cli health")"
+	echo "    $(colorize "blue" "docker-compose run app-cli health redis")"
+	echo "    $(colorize "blue" "docker-compose run app-cli health self")"
 	echo ""
 	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	echo "  $(colorize "cyan" "help|-h|--help|h")           $(colorize "magenta" "Show this help (default command)")"
@@ -272,14 +380,14 @@ case "$COMMAND" in
 	echo "  This command is executed by default when no command is provided."
 	echo ""
 	echo "  📌 $(colorize "red" "EXAMPLES")"
-	echo "    $(colorize "blue" "docker-compose run app help")"
+	echo "    $(colorize "blue" "docker-compose run app-cli help")"
 	echo ""
 	echo "════════════════════════════════════════════════════════════════════════"
 	;;
 
 *)
 	echo "┌─────────────────────────────────────────────────────────────"
-	echo "│  ❌ Unknown command: $(colorize "red" "$COMMAND")"
+	echo "│  ❌ Unknown command: $(colorize "red" $COMMAND)"
 	echo "│"
 	echo "│  💡 Use $(colorize "cyan" "'help'") to see available commands"
 	echo "└─────────────────────────────────────────────────────────────"
