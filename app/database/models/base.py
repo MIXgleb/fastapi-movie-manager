@@ -1,13 +1,9 @@
-from typing import (
-    final,
-)
-
-from sqlalchemy import (
-    MetaData,
-)
 from sqlalchemy.orm import (
     DeclarativeBase,
     declared_attr,
+)
+from sqlalchemy.schema import (
+    MetaData,
 )
 
 from app.core import (
@@ -15,20 +11,24 @@ from app.core import (
 )
 
 
-class Base(DeclarativeBase):
+class BaseModel(DeclarativeBase):
+    """Basic database model."""
+
     __abstract__ = True
 
-    metadata = MetaData(naming_convention=settings.db.naming_convention)
+    metadata = MetaData(
+        naming_convention=settings.db.naming_convention,
+    )
 
-    @final
     @declared_attr.directive
     @classmethod
     def __tablename__(cls) -> str:
-        """Get the tablename from the classname.
+        """
+        Get the tablename from the classname.
 
         Returns
         -------
         str
             tablename
         """
-        return f"{cls.__name__.lower()}s"
+        return f"{cls.__name__.lower().removesuffix('model')}s"

@@ -1,3 +1,4 @@
+import traceback
 from collections.abc import (
     Sequence,
 )
@@ -12,20 +13,19 @@ from fastapi import (
     Response,
     status,
 )
-from fastapi.encoders import (
-    jsonable_encoder,
-)
 from fastapi.exceptions import (
     RequestValidationError,
 )
 from fastapi.responses import (
-    ORJSONResponse,
+    JSONResponse,
 )
 from loguru import (
     logger,
 )
 from pydantic import (
-    BaseModel,
+    BaseModel as BaseSchema,
+)
+from pydantic.fields import (
     Field,
 )
 
@@ -35,29 +35,36 @@ from app.core.constants import (
 from app.core.exceptions.exc_handlers.base import (
     BaseExceptionHandler,
 )
-from app.core.typing import (
+from app.core.typing_ import (
     DictUrlParams,
 )
 
 
-class _CustomValidationErrorSchema(BaseModel):
+class _ValidationErrorSchema(BaseSchema):
     field: Sequence[Any]
     message: str
     extra_message: dict[Any, Any]
     type: str
 
 
-class _CustomProblemDetailsSchema(BaseModel):
+class _ProblemDetailsSchema(BaseSchema):
     type: str = Field(default="about:blank")
     title: str
     status: int
     detail: str
     instance: DictUrlParams
-    errors: list[_CustomValidationErrorSchema]
+    errors: list[_ValidationErrorSchema]
 
 
 @final
 class ValidationExceptionHandler(BaseExceptionHandler):
+    """
+    Validation exception handler.
+
+    Exceptions:
+        fastapi.exceptions.RequestValidationError
+    """
+
     @override
     async def __call__(
         self,
@@ -70,11 +77,10 @@ class ValidationExceptionHandler(BaseExceptionHandler):
             path=path,
             method=method,
             address=address,
-            headers=request.headers,
         )
 
         if isinstance(exc, RequestValidationError):
-            problem_details = _CustomProblemDetailsSchema(
+            problem_details = _ProblemDetailsSchema(
                 title="Validation Error",
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="One or more validation errors occurred in the request.",
@@ -89,9 +95,9 @@ class ValidationExceptionHandler(BaseExceptionHandler):
                 method=method,
                 path=path,
             )
-            return ORJSONResponse(
+            return JSONResponse(
+                content=problem_details.model_dump(),
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                content=jsonable_encoder(problem_details),
                 headers={"Content-Type": "application/problem+json"},
             )
 
@@ -99,7 +105,7 @@ class ValidationExceptionHandler(BaseExceptionHandler):
             type="unexpected_exception",
         ).error(
             "UnexpectedException: {exc_msg};\nRequest: {method} {path}",
-            exc_msg=repr(exc),
+            exc_msg=(f"{exc!r}\n{traceback.format_exc()}"),
             method=method,
             path=path,
         )
@@ -109,9 +115,9 @@ class ValidationExceptionHandler(BaseExceptionHandler):
     def _get_custom_error_descriptions(
         cls,
         exc: RequestValidationError,
-    ) -> list[_CustomValidationErrorSchema]:
+    ) -> list[_ValidationErrorSchema]:
         return [
-            _CustomValidationErrorSchema(
+            _ValidationErrorSchema(
                 field=error.get("loc", []),
                 message=error.get("msg", ""),
                 extra_message=error.get("ctx", {}),

@@ -19,17 +19,18 @@ from app.core.constants import (
     DISABLED_LOGGERS,
     EXTERNAL_LOGGERS,
 )
-from app.core.logging import (
+from app.core.logging_ import (
     setup_logger,
 )
-from app.database import (
-    SqlAlchemyDatabaseHelper,
+from app.database.db_managers import (
+    SqlAlchemyDatabaseManager,
 )
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
-    """Initialize the fastapi application lifespan.
+    """
+    Initialize the fastapi application lifespan.
 
     Parameters
     ----------
@@ -37,6 +38,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
         fastapi application instance
     """
     setup_logger(
+        logging_config=settings.logging,
         external_loggers=EXTERNAL_LOGGERS,
         disabled_loggers=DISABLED_LOGGERS,
     )
@@ -49,8 +51,11 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
     # Database
     # ---------------------------------------------------------------------------
     logger.info("Connecting to database...")
-    db = SqlAlchemyDatabaseHelper()
-    await db.init(str(settings.db.url))
+    database_manager = SqlAlchemyDatabaseManager()
+    await database_manager.init(
+        url=settings.db.async_url,
+        db_config=settings.db.sqla,
+    )
     logger.info("Connection to database complete.")
 
     # ===========================================================================
@@ -65,5 +70,5 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
     # Database
     # ---------------------------------------------------------------------------
     logger.info("Disconnecting from the database...")
-    await db.close()
+    await database_manager.close()
     logger.info("Disconnection from the database complete.")

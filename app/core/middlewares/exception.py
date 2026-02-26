@@ -9,7 +9,8 @@ from starlette.middleware.exceptions import (
 
 @final
 class ExceptionMiddleware(BaseExceptionMiddleware):
-    """Middleware for handling exceptions.
+    """
+    Middleware for handling exceptions.
 
     Parameters
     ----------

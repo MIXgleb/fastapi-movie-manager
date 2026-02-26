@@ -9,8 +9,13 @@ from datetime import (
     datetime,
 )
 from typing import (
+    Any,
+    Final,
     final,
     override,
+)
+from uuid import (
+    UUID,
 )
 
 from fastapi import (
@@ -19,46 +24,56 @@ from fastapi import (
 )
 
 import app.core.exceptions as exc
-from app.api.v1.schemas import (
-    UserFilterDTO,
-    UserOutputDTO,
-    UserUpdateDTO,
-    UserUpdateWithHashedPasswordDTO,
+from app.database.db_managers import (
+    SqlAlchemyDatabaseManager,
 )
-from app.core.constants import (
-    MESSAGE_USER_NOT_FOUND,
+from app.database.unit_of_works import (
+    SqlAlchemyUOW,
 )
 from app.domains import (
-    UserFilterDM,
+    UserFiltersDM,
+    UserHashedUpdateDM,
+    UserOutputDM,
     UserRole,
+    UserUpdateDM,
 )
 from app.security import (
+    ZERO_IDS,
     Payload,
-    password_helper,
-    token_helper,
+)
+from app.security.auth_managers import (
+    BaseAuthManager,
+)
+from app.security.password_managers import (
+    BasePasswordManager,
 )
 from app.services.base import (
     BaseService,
     BaseSqlAlchemyService,
 )
 
+UserNotFoundError: Final[Exception] = exc.ResourceNotFoundError("User not found.")
+
 
 class BaseUserService(BaseService):
+    """Basic abstract user service class."""
+
     @abstractmethod
     async def get_all_users(
         self,
-        filters: UserFilterDTO,
-    ) -> Sequence[UserOutputDTO]:
-        """Get the filtered users.
+        filters: UserFiltersDM,
+    ) -> Sequence[UserOutputDM]:
+        """
+        Get a filtered users.
 
         Parameters
         ----------
-        filters : UserFilterDTO
+        filters : UserFiltersDM
             user search filter
 
         Returns
         -------
-        Sequence[UserOutputDTO]
+        Sequence[UserOutputDM]
             list of users
         """
         raise NotImplementedError
@@ -66,23 +81,24 @@ class BaseUserService(BaseService):
     @abstractmethod
     async def get_user(
         self,
-        user_id: int,
-    ) -> UserOutputDTO:
-        """Get the user by id.
+        user_id: UUID,
+    ) -> UserOutputDM:
+        """
+        Get a user by id.
 
         Parameters
         ----------
-        user_id : int
+        user_id : UUID
             user id
 
         Returns
         -------
-        UserOutputDTO
+        UserOutputDM
             user data
 
         Raises
         ------
-        ResourceNotFoundError
+        UserNotFoundError
             user not found
         """
         raise NotImplementedError
@@ -90,19 +106,20 @@ class BaseUserService(BaseService):
     @abstractmethod
     async def update_user(
         self,
-        user_id: int,
-        user_update: UserUpdateDTO,
+        user_id: UUID,
+        user_update: UserUpdateDM,
         request: Request,
         response: Response,
     ) -> None:
-        """Update the user by id.
+        """
+        Update a user by id.
 
         Parameters
         ----------
-        user_id : int
+        user_id : UUID
             user id
 
-        user_update : UserUpdateDTO
+        user_update : UserUpdateDM
             user data to update
 
         request : Request
@@ -113,7 +130,7 @@ class BaseUserService(BaseService):
 
         Raises
         ------
-        ResourceNotFoundError
+        UserNotFoundError
             user not found
         """
         raise NotImplementedError
@@ -121,15 +138,16 @@ class BaseUserService(BaseService):
     @abstractmethod
     async def delete_user(
         self,
-        user_id: int,
+        user_id: UUID,
         request: Request,
         response: Response,
-    ) -> UserOutputDTO:
-        """Delete the user by id.
+    ) -> UserOutputDM:
+        """
+        Delete a user by id.
 
         Parameters
         ----------
-        user_id : int
+        user_id : UUID
             user id
 
         request : Request
@@ -140,81 +158,117 @@ class BaseUserService(BaseService):
 
         Returns
         -------
-        UserOutputDTO
+        UserOutputDM
             user data
 
         Raises
         ------
-        ResourceNotFoundError
+        UserNotFoundError
             user not found
         """
         raise NotImplementedError
 
 
 @final
-class UserService(BaseSqlAlchemyService, BaseUserService):
+class UserService(
+    BaseSqlAlchemyService,
+    BaseUserService,
+):
+    """SqlAlchemy user service."""
+
+    __slots__ = ("auth_manager", "password_manager")
+
+    @override
+    def __init__(
+        self,
+        uow_class: type[SqlAlchemyUOW],
+        database_manager: SqlAlchemyDatabaseManager,
+        password_manager: BasePasswordManager,
+        auth_manager: BaseAuthManager[Any, Any, Any, Any, Any],
+    ) -> None:
+        """
+        Initialize the user service.
+
+        Parameters
+        ----------
+        uow_class : type[SqlAlchemyUOW]
+            sqlalchemy database unit-of-work class
+
+        database_manager : SqlAlchemyDatabaseManager
+            sqlalchemy database manager
+
+        password_manager : BasePasswordManager
+            password manager
+
+        auth_manager : BaseAuthManager
+            token manager
+        """
+        super().__init__(
+            uow_class=uow_class,
+            database_manager=database_manager,
+        )
+        self.password_manager = password_manager
+        self.auth_manager = auth_manager
+
     @override
     async def get_all_users(
         self,
-        filters: UserFilterDTO,
-    ) -> Sequence[UserOutputDTO]:
+        filters: UserFiltersDM,
+    ) -> Sequence[UserOutputDM]:
         async with self.uow as uow:
-            users = await uow.users.read_all(
-                filters=UserFilterDM(
-                    **filters.model_dump(),
-                ),
-            )
-            return [UserOutputDTO.model_validate(user) for user in users]
+            users = await uow.users.read_all(filters)
+            return [UserOutputDM.from_object(user) for user in users]
 
     @override
     async def get_user(
         self,
-        user_id: int,
-    ) -> UserOutputDTO:
-        if user_id == 0:
-            return UserOutputDTO(
-                username="guest",
-                id=0,
-                role=UserRole.guest,
+        user_id: UUID,
+    ) -> UserOutputDM:
+        if user_id in ZERO_IDS:
+            return UserOutputDM(
+                username=UserRole.GUEST,
+                role=UserRole.GUEST,
                 created_at=datetime.now(UTC),
-                updated_at=datetime.now(UTC),
             )
 
         async with self.uow as uow:
             user = await uow.users.read(user_id)
 
             if user is None:
-                raise exc.ResourceNotFoundError(MESSAGE_USER_NOT_FOUND)
+                raise UserNotFoundError
 
-            return UserOutputDTO.model_validate(user)
+            return UserOutputDM.from_object(user)
 
     @override
     async def update_user(
         self,
-        user_id: int,
-        user_update: UserUpdateDTO,
+        user_id: UUID,
+        user_update: UserUpdateDM,
         request: Request,
         response: Response,
     ) -> None:
+        user_hashed_update = UserHashedUpdateDM.from_object(
+            user_update,
+            none_if_key_not_found=True,
+            hashed_password=self.password_manager.hash(user_update.password)
+            if user_update.password is not None
+            else None,
+        )
+
         async with self.uow as uow:
-            user_update_hashed_pwd = UserUpdateWithHashedPasswordDTO(
-                **user_update.model_dump(exclude_unset=True),
-                hashed_password=password_helper.hash(user_update.password),
-            )
             user = await uow.users.update(
                 item_id=user_id,
-                item_update=user_update_hashed_pwd.model_dump(exclude_unset=True),
+                item_update=user_hashed_update,
             )
 
             if user is None:
-                raise exc.ResourceNotFoundError(MESSAGE_USER_NOT_FOUND)
+                raise UserNotFoundError
 
-            payload = Payload(
-                user_id=user.id,
-                user_role=user.role,
-            )
-            await token_helper.update_tokens(
-                updated_payload=payload,
+            await self.auth_manager.update_tokens(
+                updated_payload=Payload(
+                    user_id=user.id,
+                    user_role=user.role,
+                ),
                 request=request,
                 response=response,
             )
@@ -222,19 +276,19 @@ class UserService(BaseSqlAlchemyService, BaseUserService):
     @override
     async def delete_user(
         self,
-        user_id: int,
+        user_id: UUID,
         request: Request,
         response: Response,
-    ) -> UserOutputDTO:
+    ) -> UserOutputDM:
         async with self.uow as uow:
             user = await uow.users.delete(user_id)
 
             if user is None:
-                raise exc.ResourceNotFoundError(MESSAGE_USER_NOT_FOUND)
+                raise UserNotFoundError
 
-            await token_helper.clear_tokens(
+            await self.auth_manager.clear_tokens(
                 request=request,
                 response=response,
                 user_id=user_id,
             )
-            return UserOutputDTO.model_validate(user)
+            return UserOutputDM.from_object(user)

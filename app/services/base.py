@@ -1,64 +1,86 @@
+from typing import (
+    override,
+)
+
+from pydantic import (
+    BaseModel as BaseSchema,
+)
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
 )
 
-from app.database import (
-    BaseDatabaseHelper,
+from app.core.config import (
+    SqlAlchemyConfig,
+)
+from app.database.db_managers import (
+    BaseDatabaseManager,
+)
+from app.database.unit_of_works import (
     BaseDatabaseUOW,
     BaseUOW,
 )
 
 
 class BaseService:
+    """Basic abstract service class."""
+
     __slots__ = ("uow",)
 
     def __init__(
         self,
-        type_uow: type[BaseUOW],
+        uow_class: type[BaseUOW],
     ) -> None:
-        """Initialize the service.
+        """
+        Initialize the service.
 
         Parameters
         ----------
-        type_uow : type[BaseUOW]
-            unit-of-work interface
+        uow_class : type[BaseUOW]
+            unit-of-work class
         """
-        self.uow = type_uow()
+        self.uow = uow_class()
 
 
 class BaseDatabaseService[
-    Engine,
-    Session,
-    SessionFactory,
+    EngineType,
+    SessionType,
+    SessionFactoryType,
+    DatabaseConfigType: BaseSchema,
 ](BaseService):
+    """Basic abstract database service class."""
+
+    @override
     def __init__(
         self,
-        type_uow: type[
+        uow_class: type[
             BaseDatabaseUOW[
-                Engine,
-                Session,
-                SessionFactory,
+                EngineType,
+                SessionType,
+                SessionFactoryType,
+                DatabaseConfigType,
             ]
         ],
-        db: BaseDatabaseHelper[
-            Engine,
-            Session,
-            SessionFactory,
+        database_manager: BaseDatabaseManager[
+            EngineType,
+            SessionType,
+            SessionFactoryType,
+            DatabaseConfigType,
         ],
     ) -> None:
-        """Initialize the database service.
+        """
+        Initialize the database service.
 
         Parameters
         ----------
-        type_uow : type[BaseDatabaseUOW]
-            database unit-of-work interface
+        uow_class : type[BaseDatabaseUOW]
+            database unit-of-work class
 
-        db : BaseDatabaseHelper
-            database helper instance
+        database_manager : BaseDatabaseManager
+            database manager
         """
-        self.uow = type_uow(db)
+        self.uow = uow_class(database_manager)
 
 
 class BaseSqlAlchemyService(
@@ -66,5 +88,7 @@ class BaseSqlAlchemyService(
         AsyncEngine,
         AsyncSession,
         async_sessionmaker[AsyncSession],
+        SqlAlchemyConfig,
     ],
-): ...
+):
+    """Basic abstract sqlalchemy service class."""

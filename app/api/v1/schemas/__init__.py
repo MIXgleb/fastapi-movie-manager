@@ -1,46 +1,50 @@
 __all__ = (
-    "DeleteMovieResponse",
-    "DeleteUserResponse",
-    "LoginResponse",
-    "LogoutResponse",
+    "BaseResponse",
     "MovieCreateDTO",
     "MovieFilterDTO",
     "MovieInputDTO",
     "MovieOutputDTO",
     "MovieUpdateDTO",
-    "RegisterResponse",
-    "UpdateMovieResponse",
-    "UpdateUserResponse",
+    "ResponseDeleteMovie",
+    "ResponseDeleteUser",
+    "ResponseRegisterNewUser",
+    "ResponseSuccessLogin",
+    "ResponseSuccessLogout",
+    "ResponseUpdateMovie",
+    "ResponseUpdateUser",
     "UserCreateDTO",
     "UserFilterDTO",
+    "UserHashedUpdateDTO",
     "UserInputDTO",
     "UserOutputDTO",
     "UserUpdateDTO",
-    "UserUpdateWithHashedPasswordDTO",
 )
 
 
 from app.api.v1.schemas.auth import (
-    LoginResponse,
-    LogoutResponse,
-    RegisterResponse,
+    ResponseRegisterNewUser,
+    ResponseSuccessLogin,
+    ResponseSuccessLogout,
+)
+from app.api.v1.schemas.base import (
+    BaseResponse,
 )
 from app.api.v1.schemas.movie import (
-    DeleteMovieResponse,
     MovieCreateDTO,
     MovieFilterDTO,
     MovieInputDTO,
     MovieOutputDTO,
     MovieUpdateDTO,
-    UpdateMovieResponse,
+    ResponseDeleteMovie,
+    ResponseUpdateMovie,
 )
 from app.api.v1.schemas.user import (
-    DeleteUserResponse,
-    UpdateUserResponse,
+    ResponseDeleteUser,
+    ResponseUpdateUser,
     UserCreateDTO,
     UserFilterDTO,
+    UserHashedUpdateDTO,
     UserInputDTO,
     UserOutputDTO,
     UserUpdateDTO,
-    UserUpdateWithHashedPasswordDTO,
 )

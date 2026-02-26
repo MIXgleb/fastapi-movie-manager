@@ -1,15 +1,21 @@
-from pydantic import (
-    BaseModel,
+from app.api.v1.schemas.base import (
+    BaseResponse,
 )
 
 
-class RegisterResponse(BaseModel):
+class ResponseRegisterNewUser(BaseResponse):
+    """Response scheme for registering a new user."""
+
     message: str = "New user created."
 
 
-class LoginResponse(BaseModel):
+class ResponseSuccessLogin(BaseResponse):
+    """Response scheme for successful login."""
+
     message: str = "Logged in successfully."
 
 
-class LogoutResponse(BaseModel):
+class ResponseSuccessLogout(BaseResponse):
+    """Response scheme for successful logout."""
+
     message: str = "Logged out successfully."

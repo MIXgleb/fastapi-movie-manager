@@ -1,17 +1,21 @@
 import sys
 
-from sqlalchemy import (
+from sqlalchemy.engine import (
+    URL,
     create_engine,
+)
+from sqlalchemy.sql.expression import (
     text,
 )
 
-from app.core.config import (
+from app.core import (
     settings,
 )
 
 
 def check_connection() -> tuple[bool, str]:
-    """Check the PostgreSQL connection.
+    """
+    Check the PostgreSQL connection.
 
     Returns
     -------
@@ -19,8 +23,14 @@ def check_connection() -> tuple[bool, str]:
         status, message
     """
     engine = create_engine(
-        f"postgresql://{settings.db.username}:{settings.db.password}@"
-        f"{settings.db.host}:{settings.db.port}/{settings.db.tablename}"
+        url=URL.create(
+            drivername="postgresql",
+            username=settings.db.username,
+            password=settings.db.password.get_secret_value(),
+            host=settings.db.host,
+            port=settings.db.port,
+            database=settings.db.database,
+        ),
     )
 
     with engine.connect() as conn:

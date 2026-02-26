@@ -1,53 +1,74 @@
 from datetime import (
     datetime,
 )
+from uuid import (
+    UUID,
+)
 
 from pydantic import (
-    BaseModel,
+    BaseModel as BaseSchema,
+)
+from pydantic.config import (
     ConfigDict,
+)
+from pydantic.fields import (
     Field,
 )
 
+from app.api.v1.schemas.base import (
+    BaseResponse,
+)
 from app.core.constants import (
-    MOVIE_DESCRIPTION_INPUT_FIELD,
-    MOVIE_RATE_INPUT_FIELD,
-    MOVIE_TITLE_INPUT_FIELD,
+    MOVIE_DESCRIPTION_FIELD,
+    MOVIE_RATE_FIELD,
+    MOVIE_TITLE_FIELD,
     MOVIE_TITLE_PATTERN,
 )
 
 
-class MovieBaseModel(BaseModel):
+class BaseMovieDTO(BaseSchema):
+    """Basic scheme of a movie."""
+
     title: str
     description: str
     rate: float
 
 
-class MovieInputDTO(MovieBaseModel):
-    title: str = MOVIE_TITLE_INPUT_FIELD
-    description: str = MOVIE_DESCRIPTION_INPUT_FIELD
-    rate: float = MOVIE_RATE_INPUT_FIELD
+class MovieInputDTO(BaseMovieDTO):
+    """Scheme of getting a movie."""
+
+    title: str = MOVIE_TITLE_FIELD
+    description: str = MOVIE_DESCRIPTION_FIELD
+    rate: float = MOVIE_RATE_FIELD
 
 
 class MovieCreateDTO(MovieInputDTO):
-    user_id: int
+    """Scheme of creating a movie."""
+
+    user_id: UUID
 
 
-class MovieUpdateDTO(MovieBaseModel):
+class MovieUpdateDTO(BaseMovieDTO):
+    """Scheme of updating a movie."""
+
     title: str = Field(default="", max_length=20, pattern=MOVIE_TITLE_PATTERN)
-    description: str = MOVIE_DESCRIPTION_INPUT_FIELD
+    description: str = MOVIE_DESCRIPTION_FIELD
     rate: float = Field(default=0, ge=0, le=5)
 
 
-class MovieOutputDTO(MovieBaseModel):
-    id: int
-    user_id: int
+class MovieOutputDTO(BaseMovieDTO):
+    """Scheme of returning a movie."""
+
+    id: int | UUID
     created_at: datetime
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class MovieFilterDTO(BaseModel):
+class MovieFilterDTO(BaseSchema):
+    """Scheme of filtering a movie."""
+
     limit: int = Field(default=10, le=100, ge=1)
     offset: int = Field(default=0, ge=0)
     sort_by: str = Field(default="id", validation_alias="sort-by")
@@ -58,11 +79,15 @@ class MovieFilterDTO(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
-class UpdateMovieResponse(BaseModel):
+class ResponseUpdateMovie(BaseResponse):
+    """Response scheme for updating a movie."""
+
     message: str = "Movie has been updated successfully."
     movie: MovieOutputDTO
 
 
-class DeleteMovieResponse(BaseModel):
+class ResponseDeleteMovie(BaseResponse):
+    """Response scheme for deleting a movie."""
+
     message: str = "Movie has been removed successfully."
     movie: MovieOutputDTO

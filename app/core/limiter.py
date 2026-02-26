@@ -1,7 +1,3 @@
-from typing import (
-    override,
-)
-
 from fastapi import (
     Depends,
     params,
@@ -9,20 +5,34 @@ from fastapi import (
 from fastapi_limiter.depends import (
     RateLimiter,
 )
-from pyrate_limiter import (
+from pyrate_limiter.abstracts.rate import (
     Duration,
-    Limiter,
     Rate,
+)
+from pyrate_limiter.limiter import (
+    Limiter,
 )
 
 
-class _FastAPIRateLimiter(RateLimiter):
-    @override
+class RequestRateLimiter(RateLimiter):
+    """Request rate limiter."""
+
     def __init__(
         self,
         seconds: int,
         limit: int,
     ) -> None:
+        """
+        Initialize the request rate limiter.
+
+        Parameters
+        ----------
+        seconds : int
+            number of seconds for requests
+
+        limit : int
+            limit on a number of requests per time
+        """
         limiter = Limiter(Rate(limit, Duration.SECOND * seconds))
         super().__init__(limiter=limiter)
 
@@ -31,7 +41,8 @@ def dep_rate_limiter_getter(
     seconds: int,
     limit: int = 1,
 ) -> params.Depends:
-    """Get dependencies on rate limiter.
+    """
+    Get dependency on rate limiter.
 
     Parameters
     ----------
@@ -47,8 +58,8 @@ def dep_rate_limiter_getter(
         dependency on limiter
     """
     return Depends(
-        _FastAPIRateLimiter(
+        dependency=RequestRateLimiter(
             seconds=seconds,
             limit=limit,
-        )
+        ),
     )

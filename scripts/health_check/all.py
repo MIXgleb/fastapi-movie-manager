@@ -17,7 +17,8 @@ TIMEOUT: Final[float] = 5  # seconds
 
 
 def run_health_check(script_name: str) -> bool:
-    """Run the health check script in another process.
+    """
+    Run the health check script in another process.
 
     Parameters
     ----------
@@ -52,7 +53,8 @@ def run_health_check(script_name: str) -> bool:
 
 
 def check_connections() -> tuple[bool, str]:
-    """Check all health checks.
+    """
+    Run all health checks.
 
     Returns
     -------
@@ -79,7 +81,7 @@ def check_connections() -> tuple[bool, str]:
         ok = run_health_check(script_name)
         results.append(ok)
         messages.append(
-            f"{i}. {script_name.title():<10} - {'✅ Running' if ok else '❌ Failed'}"
+            f"{i}. {script_name.title():<10} - {'✅ Running' if ok else '❌ Failed'}",
         )
 
         print("\n--------------------------------")

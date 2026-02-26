@@ -31,7 +31,7 @@ from starlette.types import (
     ASGIApp,
 )
 
-from app.core.typing import (
+from app.core.typing_ import (
     ExcludedLogRequest,
 )
 
@@ -42,7 +42,8 @@ type Address = str
 
 @final
 class LoggingMiddleware(BaseHTTPMiddleware):
-    """Middleware for logging HTTP requests and responses.
+    """
+    Middleware for logging HTTP requests and responses.
 
     Parameters
     ----------
@@ -54,13 +55,14 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
     __slots__ = ("excluded_requests",)
 
+    @override
     def __init__(
         self,
         app: ASGIApp,
         exclude_requests: Sequence[ExcludedLogRequest] = (),
     ) -> None:
-        self.excluded_requests = self._convert_excluded_requests_to_tuple_str(exclude_requests)
         super().__init__(app=app)
+        self.excluded_requests = self._convert_excluded_requests_to_tuple_str(exclude_requests)
 
     @override
     async def dispatch(
@@ -86,7 +88,6 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         if not is_excluded:
             logger_request.bind(
                 type="request",
-                headers=request.headers,
             ).info(
                 "Request: {method} {path} from {address}",
                 method=method,
@@ -101,7 +102,6 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         if not is_excluded:
             logger_request.bind(
                 type="response",
-                headers=response.headers,
                 process_time=str(process_time),
             ).info(
                 "Response: {method} {path} returned {status_code} to {address}",

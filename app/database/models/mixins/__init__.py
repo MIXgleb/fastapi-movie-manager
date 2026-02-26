@@ -1,6 +1,7 @@
 __all__ = (
     "CreatedAtMixin",
-    "IntIdPkMixin",
+    "IntIDMixin",
+    "UUIDMixin",
     "UpdatedAtMixin",
 )
 
@@ -10,5 +11,8 @@ from app.database.models.mixins.dated_at import (
     UpdatedAtMixin,
 )
 from app.database.models.mixins.int_id_pk import (
-    IntIdPkMixin,
+    IntIDMixin,
+)
+from app.database.models.mixins.uuid_id_pk import (
+    UUIDMixin,
 )

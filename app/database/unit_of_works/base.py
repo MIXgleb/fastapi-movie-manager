@@ -6,12 +6,15 @@ from types import (
     TracebackType,
 )
 from typing import (
-    ClassVar,
     Self,
 )
 
-from app.database.db_helpers import (
-    BaseDatabaseHelper,
+from pydantic import (
+    BaseModel as BaseSchema,
+)
+
+from app.database.db_managers import (
+    BaseDatabaseManager,
 )
 from app.database.repositories import (
     BaseMovieRepository,
@@ -20,8 +23,11 @@ from app.database.repositories import (
 
 
 class BaseUOW(ABC):
+    """Basic abstract unit-of-work class."""
+
     async def __aenter__(self) -> Self:
-        """Enter to the asynchronous UOW manager.
+        """
+        Enter to the asynchronous UOW manager.
 
         Returns
         -------
@@ -36,7 +42,8 @@ class BaseUOW(ABC):
         exc_val: BaseException | None,
         exc_tb: TracebackType | None,
     ) -> None:
-        """Exit the asynchronous UOW manager.
+        """
+        Exit the asynchronous UOW manager.
 
         Parameters
         ----------
@@ -49,10 +56,10 @@ class BaseUOW(ABC):
         exc_tb : TracebackType | None
             traceback
         """
-        if exc_type is not None:
-            await self.rollback()
-        else:
+        if exc_type is None:
             await self.commit()
+        else:
+            await self.rollback()
 
     @abstractmethod
     async def commit(self) -> None:
@@ -66,29 +73,32 @@ class BaseUOW(ABC):
 
 
 class BaseDatabaseUOW[
-    Engine,
-    Session,
-    SessionFactory,
+    EngineType,
+    SessionType,
+    SessionFactoryType,
+    DatabaseConfigType: BaseSchema,
 ](BaseUOW):
-    __slots__ = ("_session", "_session_factory")
+    """Basic abstract database unit-of-work class."""
 
-    users: ClassVar[BaseUserRepository]
-    movies: ClassVar[BaseMovieRepository]
+    users: BaseUserRepository[SessionType]
+    movies: BaseMovieRepository[SessionType]
 
+    @abstractmethod
     def __init__(
         self,
-        db: BaseDatabaseHelper[
-            Engine,
-            Session,
-            SessionFactory,
+        database_manager: BaseDatabaseManager[
+            EngineType,
+            SessionType,
+            SessionFactoryType,
+            DatabaseConfigType,
         ],
     ) -> None:
-        """Initialize the database unit-of-work interface.
+        """
+        Initialize the database unit-of-work.
 
         Parameters
         ----------
-        db : BaseDatabaseHelper
-            database helper instance
+        database_manager : BaseDatabaseManager
+            database manager
         """
-        self._session: Session | None = None
-        self._session_factory = db.session_factory
+        raise NotImplementedError

@@ -1,15 +1,15 @@
 __all__ = (
-    "Base",
-    "Movie",
-    "User",
+    "BaseModel",
+    "MovieModel",
+    "UserModel",
 )
 
 from app.database.models.base import (
-    Base,
+    BaseModel,
 )
 from app.database.models.movie import (
-    Movie,
+    MovieModel,
 )
 from app.database.models.user import (
-    User,
+    UserModel,
 )

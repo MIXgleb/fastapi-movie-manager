@@ -6,48 +6,70 @@ from collections.abc import (
     Sequence,
 )
 from typing import (
-    Any,
     final,
     override,
 )
-
-from sqlalchemy import (
-    Select,
-    select,
+from uuid import (
+    UUID,
 )
+
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
 )
-from sqlalchemy.orm import (
-    DeclarativeBase,
+from sqlalchemy.sql.expression import (
+    Select,
+    select,
 )
 
+from app.database.models import (
+    BaseModel,
+)
 from app.domains import (
-    DataclassType,
+    BaseDataclass,
 )
-
-type TypeDictAnyAny = dict[Any, Any]
 
 
 class BaseDatabaseRepository[
-    Model,
-    Filter,
+    ModelType,
+    ItemCreateType,
+    ItemUpdateType,
+    FiltersType,
+    SessionType,
 ](ABC):
-    @abstractmethod
-    async def create(
+    """Basic abstract database repository class."""
+
+    __slots__ = ("session",)
+
+    def __init__(
         self,
-        item_create: TypeDictAnyAny,
-    ) -> Model:
-        """Create a new item.
+        session: SessionType,
+    ) -> None:
+        """
+        Initialize the database repository.
 
         Parameters
         ----------
-        item_create : DictAny
+        session : SessionType
+            instance of a database connection session
+        """
+        self.session = session
+
+    @abstractmethod
+    async def create(
+        self,
+        item_create: ItemCreateType,
+    ) -> ModelType:
+        """
+        Create a new item.
+
+        Parameters
+        ----------
+        item_create : ItemCreateType
             item data to create
 
         Returns
         -------
-        Model
+        ModelType
             created item model
         """
         raise NotImplementedError
@@ -55,18 +77,19 @@ class BaseDatabaseRepository[
     @abstractmethod
     async def read(
         self,
-        item_id: int,
-    ) -> Model | None:
-        """Read the item by id.
+        item_id: int | UUID,
+    ) -> ModelType | None:
+        """
+        Read a item by id.
 
         Parameters
         ----------
-        item_id : int
+        item_id : int | UUID
             item id
 
         Returns
         -------
-        Model | None
+        ModelType | None
             item model
         """
         raise NotImplementedError
@@ -74,22 +97,23 @@ class BaseDatabaseRepository[
     @abstractmethod
     async def update(
         self,
-        item_id: int,
-        item_update: TypeDictAnyAny,
-    ) -> Model | None:
-        """Update the item by id.
+        item_id: int | UUID,
+        item_update: ItemUpdateType,
+    ) -> ModelType | None:
+        """
+        Update a item by id.
 
         Parameters
         ----------
-        item_id : int
+        item_id : int | UUID
             item id
 
-        item_update : DictAny
+        item_update : ItemUpdateType
             item data to update
 
         Returns
         -------
-        Model | None
+        ModelType | None
             updated item model
         """
         raise NotImplementedError
@@ -97,18 +121,19 @@ class BaseDatabaseRepository[
     @abstractmethod
     async def delete(
         self,
-        item_id: int,
-    ) -> Model | None:
-        """Delete the item by id.
+        item_id: int | UUID,
+    ) -> ModelType | None:
+        """
+        Delete a item by id.
 
         Parameters
         ----------
-        item_id : int
+        item_id : int | UUID
             item id
 
         Returns
         -------
-        Model | None
+        ModelType | None
             item model
         """
         raise NotImplementedError
@@ -116,65 +141,53 @@ class BaseDatabaseRepository[
     @abstractmethod
     async def read_all(
         self,
-        filters: Filter,
-        _relation_id: int | None,
-    ) -> Sequence[Model]:
-        """Read all items with the search filter.
+        filters: FiltersType,
+        relation_id: int | UUID | None,
+    ) -> Sequence[ModelType]:
+        """
+        Read all items with a search filter.
 
         Parameters
         ----------
-        filters : Filter
+        filters : FiltersType
             item search filter
 
-        relation_id : int | None
+        relation_id : int | UUID | None
             relationship id
 
         Returns
         -------
-        Sequence[Model]
+        Sequence[ModelType]
             list of items
-
-        Raises
-        ------
-        TypeError
-            missing 'relation_id' argument
         """
         raise NotImplementedError
 
 
 class BaseSqlAlchemyRepository[
-    Model: DeclarativeBase,
-    Filter: DataclassType,
+    ModelType: BaseModel,
+    ItemCreateType: BaseDataclass,
+    ItemUpdateType: BaseDataclass,
+    FiltersType: BaseDataclass,
 ](
     BaseDatabaseRepository[
-        Model,
-        Filter,
+        ModelType,
+        ItemCreateType,
+        ItemUpdateType,
+        FiltersType,
+        AsyncSession,
     ],
 ):
-    __slots__ = ("session",)
+    """Basic abstract SqlAlchemy database repository class."""
 
-    model: type[Model]
-
-    def __init__(
-        self,
-        session: AsyncSession,
-    ) -> None:
-        """Initialize the sqlalchemy repository.
-
-        Parameters
-        ----------
-        session : AsyncSession
-            instance of the database connection session
-        """
-        self.session = session
+    model_class: type[ModelType]
 
     @final
     @override
     async def create(
         self,
-        item_create: TypeDictAnyAny,
-    ) -> Model:
-        new_item = self.model(**item_create)
+        item_create: ItemCreateType,
+    ) -> ModelType:
+        new_item = self.model_class(**item_create.as_dict())
         self.session.add(new_item)
         await self.session.flush()
         return new_item
@@ -183,23 +196,23 @@ class BaseSqlAlchemyRepository[
     @override
     async def read(
         self,
-        item_id: int,
-    ) -> Model | None:
-        return await self.session.get(self.model, item_id)
+        item_id: int | UUID,
+    ) -> ModelType | None:
+        return await self.session.get(self.model_class, item_id)
 
     @final
     @override
     async def update(
         self,
-        item_id: int,
-        item_update: TypeDictAnyAny,
-    ) -> Model | None:
+        item_id: int | UUID,
+        item_update: ItemUpdateType,
+    ) -> ModelType | None:
         item = await self.read(item_id)
 
         if item is None:
             return None
 
-        for key, value in item_update.items():
+        for key, value in item_update.as_dict(exclude_none=True).items():
             setattr(item, key, value)
 
         await self.session.flush()
@@ -209,8 +222,8 @@ class BaseSqlAlchemyRepository[
     @override
     async def delete(
         self,
-        item_id: int,
-    ) -> Model | None:
+        item_id: int | UUID,
+    ) -> ModelType | None:
         item = await self.read(item_id)
 
         if item is None:
@@ -222,44 +235,44 @@ class BaseSqlAlchemyRepository[
     @override
     async def read_all(
         self,
-        filters: Filter,
-        _relation_id: int | None,
-    ) -> Sequence[Model]:
-        if _relation_id is None:
-            msg_err = (
-                f"{self.model}.read_all() missing 1 required "
-                "positional argument: 'relation_id'"
-            )
-            raise TypeError(msg_err)
-
-        query = select(self.model)
-        query = await self._filter_query(query, filters, _relation_id)
+        filters: FiltersType,
+        relation_id: int | UUID | None,
+    ) -> Sequence[ModelType]:
+        query = select(self.model_class)
+        query = await self._filter_query(
+            query=query,
+            filters=filters,
+            relation_id=relation_id,
+        )
         result = await self.session.scalars(query)
         return result.all()
 
     @classmethod
     async def _filter_query(
         cls,
-        query: Select[tuple[Model]],
-        _filters: Filter,
-        _relation_id: int,
-    ) -> Select[tuple[Model]]:
-        """Filter the query by the specified search filter.
+        query: Select[tuple[ModelType]],
+        filters: FiltersType,
+        relation_id: int | UUID | None,
+    ) -> Select[tuple[ModelType]]:
+        """
+        Filter a query by the specified search filter.
 
         Parameters
         ----------
-        query : Select[tuple[Model]]
+        query : Select[tuple[ModelType]]
             database query expression
 
-        _filters : Filter
+        filters : FiltersType
             item search filter
 
-        _relation_id : int
+        relation_id : int | UUID | None
             relationship id
 
         Returns
         -------
-        Select[tuple[Model]]
+        Select[tuple[ModelType]]
             filtered query expression
         """
+        _ = filters
+        _ = relation_id
         return query

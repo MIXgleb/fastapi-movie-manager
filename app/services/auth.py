@@ -13,20 +13,25 @@ from fastapi import (
 )
 
 import app.core.exceptions as exc
-from app.api.v1.schemas import (
-    UserCreateDTO,
-    UserInputDTO,
+from app.database.db_managers import (
+    SqlAlchemyDatabaseManager,
 )
-from app.database import (
-    BaseUOW,
+from app.database.unit_of_works import (
+    SqlAlchemyUOW,
 )
 from app.domains import (
+    UserCreateDM,
+    UserInputDM,
     UserRole,
 )
 from app.security import (
     Payload,
-    password_helper,
-    token_helper,
+)
+from app.security.auth_managers import (
+    BaseAuthManager,
+)
+from app.security.password_managers import (
+    BasePasswordManager,
 )
 from app.services.base import (
     BaseService,
@@ -35,17 +40,20 @@ from app.services.base import (
 
 
 class BaseAuthService(BaseService):
+    """Basic abstract auth service class."""
+
     @abstractmethod
     async def login(
         self,
-        user_input: UserInputDTO,
+        user_input: UserInputDM,
         request: Request,
     ) -> None:
-        """Log in to the account.
+        """
+        Log in to the account.
 
         Parameters
         ----------
-        user_input : UserInputDTO
+        user_input : UserInputDM
             user credentials
 
         request : Request
@@ -64,13 +72,14 @@ class BaseAuthService(BaseService):
     @abstractmethod
     async def register(
         self,
-        user_input: UserInputDTO,
+        user_input: UserInputDM,
     ) -> None:
-        """Register a new user.
+        """
+        Register a new user.
 
         Parameters
         ----------
-        user_input : UserInputDTO
+        user_input : UserInputDM
             user data
 
         Raises
@@ -86,7 +95,8 @@ class BaseAuthService(BaseService):
         request: Request,
         response: Response,
     ) -> None:
-        """Log out of the account.
+        """
+        Log out of the account.
 
         Parameters
         ----------
@@ -100,11 +110,50 @@ class BaseAuthService(BaseService):
 
 
 @final
-class AuthService(BaseSqlAlchemyService, BaseAuthService):
+class AuthService(
+    BaseSqlAlchemyService,
+    BaseAuthService,
+):
+    """SqlAlchemy auth service."""
+
+    __slots__ = ("auth_manager", "password_manager")
+
+    @override
+    def __init__(
+        self,
+        uow_class: type[SqlAlchemyUOW],
+        database_manager: SqlAlchemyDatabaseManager,
+        password_manager: BasePasswordManager,
+        auth_manager: BaseAuthManager[Any, Any, Any, Any, Any],
+    ) -> None:
+        """
+        Initialize the auth service.
+
+        Parameters
+        ----------
+        uow_class : type[SqlAlchemyUOW]
+            sqlalchemy database unit-of-work class
+
+        database_manager : SqlAlchemyDatabaseManager
+            sqlalchemy database manager
+
+        password_manager : BasePasswordManager
+            password manager
+
+        auth_manager : BaseAuthManager
+            token manager
+        """
+        super().__init__(
+            uow_class=uow_class,
+            database_manager=database_manager,
+        )
+        self.password_manager = password_manager
+        self.auth_manager = auth_manager
+
     @override
     async def login(
         self,
-        user_input: UserInputDTO,
+        user_input: UserInputDM,
         request: Request,
     ) -> None:
         async with self.uow as uow:
@@ -114,7 +163,7 @@ class AuthService(BaseSqlAlchemyService, BaseAuthService):
                 exc_msg = "User not found."
                 raise exc.AuthorizationError(exc_msg)
 
-            if not password_helper.verify(user_input.password, user.hashed_password):
+            if not self.password_manager.verify(user_input.password, user.hashed_password):
                 exc_msg = "Authorization failed."
                 raise exc.AuthorizationError(exc_msg)
 
@@ -122,7 +171,7 @@ class AuthService(BaseSqlAlchemyService, BaseAuthService):
                 user_id=user.id,
                 user_role=user.role,
             )
-            await token_helper.generate_tokens(
+            await self.auth_manager.generate_tokens(
                 payload=payload,
                 request=request,
             )
@@ -130,12 +179,12 @@ class AuthService(BaseSqlAlchemyService, BaseAuthService):
     @override
     async def register(
         self,
-        user_input: UserInputDTO,
+        user_input: UserInputDM,
     ) -> None:
-        user_create = UserCreateDTO(
+        user_create = UserCreateDM(
             username=user_input.username,
-            hashed_password=password_helper.hash(user_input.password),
-            role=UserRole.user,
+            hashed_password=self.password_manager.hash(user_input.password),
+            role=UserRole.USER,
         )
 
         async with self.uow as uow:
@@ -144,7 +193,7 @@ class AuthService(BaseSqlAlchemyService, BaseAuthService):
             if user is not None:
                 raise exc.UserExistsError
 
-            await uow.users.create(user_create.model_dump())
+            await uow.users.create(user_create)
 
     @override
     async def logout(
@@ -152,7 +201,7 @@ class AuthService(BaseSqlAlchemyService, BaseAuthService):
         request: Request,
         response: Response,
     ) -> None:
-        await token_helper.clear_tokens(
+        await self.auth_manager.clear_tokens(
             request=request,
             response=response,
         )

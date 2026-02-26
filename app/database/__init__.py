@@ -1,17 +1,11 @@
 __all__ = (
-    "BaseDatabaseHelper",
-    "BaseDatabaseUOW",
-    "BaseUOW",
-    "SqlAlchemyDatabaseHelper",
-    "SqlAlchemyUOW",
+    "BaseModel",
+    "MovieModel",
+    "UserModel",
 )
 
-from app.database.db_helpers import (
-    BaseDatabaseHelper,
-    SqlAlchemyDatabaseHelper,
-)
-from app.database.unit_of_works import (
-    BaseDatabaseUOW,
-    BaseUOW,
-    SqlAlchemyUOW,
+from app.database.models import (
+    BaseModel,
+    MovieModel,
+    UserModel,
 )

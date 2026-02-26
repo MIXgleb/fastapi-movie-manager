@@ -1,6 +1,6 @@
 [project]
 name = "fastapi-movies"
-version = "0.1.0"
+version = "0.2.0"
 description = "FastAPI Movies Project"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -18,11 +18,12 @@ dependencies = [
     "pydantic-settings>=2.10.1",
     "pyjwt>=2.10.1",
     "redis[hiredis]>=6.4.0",
-    "sqlalchemy>=2.0.43",
+    "sqlalchemy[asyncio]>=2.0.43",
 ]
 
+
 [dependency-groups]
-lint = ["ruff>=0.13.0"]
+lint = ["pyrefly>=0.52.0", "ruff>=0.13.0", "ty>=0.0.16"]
 test = [
     "pytest>=8.4",
     "pytest-cov>=6.1",
@@ -32,37 +33,39 @@ test = [
     "covdefaults>=2.3",
 ]
 
+
 [tool.ruff]
 # Ruff config: https://docs.astral.sh/ruff/settings
-preview = true
+# preview = true
 line-length = 95
 target-version = "py313"
 extend-exclude = ["tests/"]
 
+
 [tool.ruff.format]
-preview = true
+# preview = true
 quote-style = "double"
 docstring-code-format = true
 
+
 [tool.ruff.lint]
-preview = true
+# preview = true
 select = ["ALL"]
 ignore = [
-    "D203",   # blank line before class docstring (-> D211)
-    "D212",   # docstring starts from the first line (-> D213)
     "COM812", # missing trailing comma (due to ruff conflict)
     "CPY001", # copyright notice
     "D100",   # docstring in public module
-    "D101",   # docstring in public class
     "D104",   # docstring in public package
-    "RUF067", # `__init__` module should only contain docstrings and re-exports
 ]
+
 
 [tool.ruff.lint.pylint]
 allow-dunder-method-names = ["__tablename__"]
 
+
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
 
 [tool.ruff.lint.per-file-ignores]
 "alembic/*.py" = [
@@ -75,13 +78,14 @@ convention = "numpy"
     "S603",    # `subprocess` call: check for execution of untrusted input
     "PLW1510", # `subprocess.run` without explicit `check` argument
 ]
-"app/core/exceptions/errors.py" = [
-    "D107", # missing docstring in `__init__`
+"app/api/*/__init__.py" = [
+    "RUF067", # `__init__` module should only contain docstrings and re-exports
 ]
 "app/database/models/mixins/*.py" = [
     "D102",    # missing docstring in public method
     "PLR6301", # method could be a function, class method, or static method
 ]
+
 
 [tool.pytest.ini_options]
 # Pytest config: http://doc.pytest.org/en/latest/customize.html
@@ -89,7 +93,6 @@ testpaths = ["tests"]
 xfail_strict = true
 filterwarnings = ["error"]
 asyncio_mode = "strict"
-
 addopts = [
     "--strict-config",
     "--strict-markers",
@@ -103,6 +106,7 @@ addopts = [
     # pytest-xdist
     "-n=auto",
 ]
+
 
 [tool.coverage.run]
 # Coverage config: https://coverage.readthedocs.io/

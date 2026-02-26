@@ -14,13 +14,16 @@ type Address = str
 
 
 class BaseExceptionHandler(ABC):
+    """Basic abstract exception handler class."""
+
     @abstractmethod
     async def __call__(
         self,
         request: Request,
         exc: Exception,
     ) -> Response:
-        """FastAPI exception handler.
+        """
+        FastAPI exception handler.
 
         Parameters
         ----------

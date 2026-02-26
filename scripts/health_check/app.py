@@ -8,7 +8,7 @@ from typing import (
 
 import httpx
 
-from app.core.config import (
+from app.core import (
     settings,
 )
 
@@ -17,7 +17,8 @@ SUCCESS_CODES: Final[set[int]] = {200}
 
 
 def check_connection() -> tuple[bool, str]:
-    """Check the FastAPI application connection.
+    """
+    Check the FastAPI application connection.
 
     Returns
     -------

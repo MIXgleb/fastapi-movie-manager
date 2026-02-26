@@ -1,122 +1,98 @@
-from typing import (
-    Annotated,
-)
-
 from fastapi import (
     APIRouter,
-    Body,
-    Depends,
-    Request,
-    Response,
     status,
 )
-from pydantic import (
-    BaseModel,
-)
 
+from app.api.v1.dependencies import (
+    AuthLoginDep,
+    AuthLogoutDep,
+    AuthRegisterDep,
+)
 from app.api.v1.schemas import (
-    LoginResponse,
-    LogoutResponse,
-    RegisterResponse,
-    UserInputDTO,
+    BaseResponse,
+    ResponseRegisterNewUser,
+    ResponseSuccessLogin,
+    ResponseSuccessLogout,
 )
 from app.core import (
+    dep_rate_limiter_getter,
     settings,
-)
-from app.services import (
-    AuthService,
-    BaseAuthService,
-    SqlAlchemyServiceHelper,
 )
 
 router = APIRouter(
     prefix=settings.api.v1.auth,
     tags=["Auth"],
+    dependencies=[
+        dep_rate_limiter_getter(seconds=5, limit=2),
+    ],
 )
-auth_service_helper = SqlAlchemyServiceHelper(AuthService)
-
-AuthServiceType = Annotated[
-    BaseAuthService,
-    Depends(auth_service_helper.service_getter),
-]
-UserFromBody = Annotated[UserInputDTO, Body()]
 
 
-@router.post(path="/login")
+@router.post(
+    path="/login",
+    response_model=ResponseSuccessLogin,
+)
 async def login(
-    auth_service: AuthServiceType,
-    user_input: UserFromBody,
-    request: Request,
-) -> BaseModel:
-    """Log in to the account.
+    login_status: AuthLoginDep,
+) -> BaseResponse:
+    """
+    Log in to the account.
 
     Parameters
     ----------
-    auth_service : BaseAuthService
-        auth service
-
-    user_input : UserInputDTO
-        user credentials
-
-    request : Request
-        request from the client
+    login_status : AuthLoginDep
+        login status message
 
     Returns
     -------
-    BaseModel
+    BaseResponse
         status message
     """
-    await auth_service.login(user_input, request)
-    return LoginResponse()
+    return login_status
 
 
-@router.post(path="/register", status_code=status.HTTP_201_CREATED)
+@router.post(
+    path="/register",
+    response_model=ResponseRegisterNewUser,
+    status_code=status.HTTP_201_CREATED,
+)
 async def register(
-    auth_service: AuthServiceType,
-    user_input: UserFromBody,
-) -> BaseModel:
-    """Register a new user.
+    register_status: AuthRegisterDep,
+) -> BaseResponse:
+    """
+    Register a new user.
 
     Parameters
     ----------
-    auth_service : BaseAuthService
-        auth service
-
-    user_input : UserInputDTO
-        user credentials
+    register_status : AuthRegisterDep
+        register status message
 
     Returns
     -------
-    BaseModel
+    BaseResponse
         status message
     """
-    await auth_service.register(user_input)
-    return RegisterResponse()
+    return register_status
 
 
-@router.get(path="/logout")
+@router.get(
+    path="/logout",
+    response_model=ResponseSuccessLogout,
+)
 async def logout(
-    auth_service: AuthServiceType,
-    request: Request,
-    response: Response,
-) -> BaseModel:
-    """Log out of the account.
+    logout_status: AuthLogoutDep,
+) -> BaseResponse:
+    """
+    Log out of the account.
 
     Parameters
     ----------
-    auth_service : AuthServiceType
-        auth service
-
-    request : Request
-        request from the client
-
-    response : Response
-        response to the client
+    logout_status : AuthLogoutDep
+        logout status message
 
     Returns
     -------
-    BaseModel
+    BaseResponse
         status message
     """
-    await auth_service.logout(request, response)
-    return LogoutResponse()
+    return logout_status

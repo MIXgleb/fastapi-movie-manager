@@ -9,7 +9,8 @@ from fastapi.middleware.cors import (
 
 @final
 class CORSMiddleware(BaseCORSMiddleware):
-    """Middleware for handling Cross-Origin Resource Sharing (CORS).
+    """
+    Middleware for handling Cross-Origin Resource Sharing (CORS).
 
     Parameters
     ----------

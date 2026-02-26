@@ -1,3 +1,4 @@
+import traceback
 from typing import (
     final,
     override,
@@ -21,6 +22,13 @@ from app.core.exceptions.exc_handlers.base import (
 
 @final
 class GlobalExceptionHandler(BaseExceptionHandler):
+    """
+    Global exception handler.
+
+    Exceptions:
+        All
+    """
+
     @override
     async def __call__(
         self,
@@ -34,10 +42,9 @@ class GlobalExceptionHandler(BaseExceptionHandler):
             path=path,
             method=method,
             address=address,
-            headers=request.headers,
         ).error(
             "UnexpectedException: {exc_msg};\nRequest: {method} {path}",
-            exc_msg=repr(exc),
+            exc_msg=(f"{exc!r}\n{traceback.format_exc()}"),
             method=method,
             path=path,
         )

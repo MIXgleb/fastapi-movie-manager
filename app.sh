@@ -12,7 +12,7 @@ readonly DOCKER_API_VERSION="v1.42"
 readonly DOCKER_SOCKET_PATH="/var/run/docker.sock"
 readonly EXCLUDED_AUTO_REMOVAL=("run")
 
-readonly UVICORN_BASE_COMMAND="uvicorn app.main:app"
+readonly UVICORN_BASE_COMMAND="uvicorn app.app:app"
 readonly ALEMBIC_BASE_COMMAND="alembic upgrade head"
 readonly VOLUMES_BASE_COMMAND="check_volumes"
 readonly SHELL_BASE_COMMAND="python"
@@ -37,7 +37,7 @@ cleanup() {
 		return 1
 	}
 
-	[ $AUTO_REMOVAL != true ] && return 0
+	[ "$AUTO_REMOVAL" != true ] && return 0
 	[ ! -f /.dockerenv ] && return 0
 	is_excluded $COMMAND && return 0
 
@@ -330,7 +330,7 @@ case $COMMAND in
 	echo "    $(colorize "blue" "docker-compose run app-cli migrate")"
 	echo ""
 	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	echo "  $(colorize "cyan" "volume|vol [arg]")         $(colorize "magenta" "Search for project volumes")"
+	echo "  $(colorize "cyan" "volume|vol [arg]")           $(colorize "magenta" "Search for project volumes")"
 	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	echo "  Arguments: OPTIONAL (project name)"
 	echo ""

@@ -1,28 +1,38 @@
 __all__ = (
-    "MovieDM",
-    "MovieFilterDM",
-    "TypeUserRole",
-    "UserDM",
-    "UserFilterDM",
+    "BaseDataclass",
+    "DataclassType",
+    "MovieCreateDM",
+    "MovieFiltersDM",
+    "MovieInputDM",
+    "MovieOutputDM",
+    "MovieUpdateDM",
+    "UserCreateDM",
+    "UserFiltersDM",
+    "UserHashedUpdateDM",
+    "UserInputDM",
+    "UserOutputDM",
     "UserRole",
+    "UserUpdateDM",
 )
 
-from typing import (
-    ClassVar,
-    Protocol,
-)
 
+from app.domains.base import (
+    BaseDataclass,
+    DataclassType,
+)
 from app.domains.movie import (
-    MovieDM,
-    MovieFilterDM,
+    MovieCreateDM,
+    MovieFiltersDM,
+    MovieInputDM,
+    MovieOutputDM,
+    MovieUpdateDM,
 )
 from app.domains.user import (
-    TypeUserRole,
-    UserDM,
-    UserFilterDM,
+    UserCreateDM,
+    UserFiltersDM,
+    UserHashedUpdateDM,
+    UserInputDM,
+    UserOutputDM,
     UserRole,
+    UserUpdateDM,
 )
-
-
-class DataclassType(Protocol):
-    __dataclass_fields__: ClassVar

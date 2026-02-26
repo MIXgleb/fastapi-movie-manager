@@ -1,223 +1,182 @@
 from collections.abc import (
     Sequence,
 )
-from typing import (
-    Annotated,
-)
 
 from fastapi import (
     APIRouter,
-    Body,
-    Depends,
-    Path,
-    Query,
     status,
-)
-from pydantic import (
-    BaseModel,
 )
 
 from app.api.v1.dependencies import (
-    dep_movie_ownership_getter,
+    MovieCreateDep,
+    MovieDeleteDep,
+    MovieGetAllDep,
+    MovieGetDep,
+    MovieOwnershipDep,
+    MovieUpdateDep,
     dep_permission_getter,
 )
 from app.api.v1.schemas import (
-    DeleteMovieResponse,
-    MovieCreateDTO,
-    MovieFilterDTO,
-    MovieInputDTO,
+    BaseResponse,
     MovieOutputDTO,
-    MovieUpdateDTO,
-    UpdateMovieResponse,
+    ResponseDeleteMovie,
+    ResponseUpdateMovie,
 )
 from app.core import (
+    dep_rate_limiter_getter,
     settings,
 )
 from app.domains import (
+    MovieOutputDM,
     UserRole,
-)
-from app.security import (
-    PayloadFromToken,
-)
-from app.services import (
-    BaseMovieService,
-    MovieService,
-    SqlAlchemyServiceHelper,
 )
 
 router = APIRouter(
     prefix=settings.api.v1.movies,
     tags=["Movies"],
+    dependencies=[
+        dep_rate_limiter_getter(seconds=1),
+    ],
 )
-movie_service_helper = SqlAlchemyServiceHelper(MovieService)
-MovieOwnership = dep_movie_ownership_getter(movie_service_helper)
-
-MovieServiceType = Annotated[
-    BaseMovieService,
-    Depends(movie_service_helper.service_getter),
-]
-MovieFromBody = Annotated[MovieInputDTO, Body()]
-MovieIdFromPath = Annotated[int, Path()]
-MovieFilterFromQuery = Annotated[MovieFilterDTO, Query()]
-MovieUpdateFromBody = Annotated[MovieUpdateDTO, Body()]
 
 
 @router.post(
     path="/new",
+    response_model=MovieOutputDTO,
     status_code=status.HTTP_201_CREATED,
     dependencies=[
-        dep_permission_getter(UserRole.admin, UserRole.user),
+        dep_permission_getter(
+            UserRole.ADMIN,
+            UserRole.USER,
+        ),
     ],
 )
 async def create_movie(
-    movie_service: MovieServiceType,
-    payload: PayloadFromToken,
-    movie_input: MovieFromBody,
-) -> MovieOutputDTO:
-    """Create a new movie.
+    created_movie: MovieCreateDep,
+) -> MovieOutputDM:
+    """
+    Create a new movie.
 
     Parameters
     ----------
-    movie_service : BaseMovieService
-        movie service
-
-    payload : Payload
-        payload data
-
-    movie_input : MovieInputDTO
-        new movie data
+    created_movie : MovieCreateDep
+        created movie data
 
     Returns
     -------
-    MovieOutputDTO
+    MovieOutputDM
         movie data
     """
-    movie_create = MovieCreateDTO(**movie_input.model_dump(), user_id=payload.user_id)
-    return await movie_service.create_movie(movie_create)
+    return created_movie
 
 
 @router.get(
     path="/all",
+    response_model=list[MovieOutputDTO],
     dependencies=[
-        dep_permission_getter(UserRole.admin, UserRole.user),
+        dep_permission_getter(
+            UserRole.ADMIN,
+            UserRole.USER,
+        ),
     ],
 )
 async def get_all_movies(
-    movie_service: MovieServiceType,
-    payload: PayloadFromToken,
-    filters: MovieFilterFromQuery,
-) -> Sequence[MovieOutputDTO]:
-    """Get all the user's movies.
+    movies: MovieGetAllDep,
+) -> Sequence[MovieOutputDM]:
+    """
+    Get all user's movies.
 
     Parameters
     ----------
-    movie_service : BaseMovieService
-        movie service
-
-    payload : Payload
-        payload data
-
-    filters : MovieFilterDTO
-        movie search filter
+    movies : MovieGetAllDep
+        user's movies
 
     Returns
     -------
-    Sequence[MovieOutputDTO]
+    Sequence[MovieOutputDM]
         data of movies
     """
-    return await movie_service.get_all_movies(payload.user_id, filters)
+    return movies
 
 
 @router.get(
     path="/{movie_id}",
-    dependencies=[
-        MovieOwnership,
-    ],
+    response_model=MovieOutputDTO,
 )
 async def get_movie(
-    movie_service: MovieServiceType,
-    movie_id: MovieIdFromPath,
-) -> MovieOutputDTO:
-    """Get the movie by id.
+    movie: MovieGetDep,
+) -> MovieOutputDM:
+    """
+    Get a movie by id.
 
     Parameters
     ----------
-    movie_service : BaseMovieService
-        movie service
-
-    movie_id : int
-        movie id
+    movie : MovieGetDep
+        found movie data
 
     Returns
     -------
-    MovieOutputDTO
+    MovieOutputDM
         movie data
     """
-    return await movie_service.get_movie(movie_id)
+    return movie
 
 
 @router.put(
     path="/{movie_id}",
+    response_model=ResponseUpdateMovie,
     dependencies=[
-        dep_permission_getter(UserRole.admin, UserRole.user),
-        MovieOwnership,
+        dep_permission_getter(
+            UserRole.ADMIN,
+            UserRole.USER,
+        ),
+        MovieOwnershipDep,
     ],
 )
 async def update_movie(
-    movie_service: MovieServiceType,
-    movie_id: MovieIdFromPath,
-    movie_update: MovieUpdateFromBody,
-) -> BaseModel:
-    """Update the movie by id.
+    updated_movie: MovieUpdateDep,
+) -> BaseResponse:
+    """
+    Update a movie by id.
 
     Parameters
     ----------
-    movie_service : BaseMovieService
-        movie service
-
-    movie_id : int
-        movie id
-
-    movie_update : MovieUpdateDTO
-        movie data to update
+    updated_movie : MovieUpdateDep
+        updated movie data
 
     Returns
     -------
-    BaseModel
+    BaseResponse
         status message
     """
-    movie = await movie_service.update_movie(
-        movie_id=movie_id,
-        movie_update=movie_update,
-    )
-    return UpdateMovieResponse(movie=movie)
+    return updated_movie
 
 
 @router.delete(
     path="/{movie_id}",
+    response_model=ResponseDeleteMovie,
     dependencies=[
-        dep_permission_getter(UserRole.admin, UserRole.user),
-        MovieOwnership,
+        dep_permission_getter(
+            UserRole.ADMIN,
+            UserRole.USER,
+        ),
+        MovieOwnershipDep,
     ],
 )
 async def delete_movie(
-    movie_service: MovieServiceType,
-    movie_id: MovieIdFromPath,
-) -> BaseModel:
-    """Delete the movie by id.
+    deleted_movie: MovieDeleteDep,
+) -> BaseResponse:
+    """
+    Delete a movie by id.
 
     Parameters
     ----------
-    movie_service : BaseMovieService
-        movie service
-
-    movie_id : int
-        movie id
+    deleted_movie : MovieDeleteDep
+        deleted movie data
 
     Returns
     -------
-    BaseModel
+    BaseResponse
         status message
     """
-    movie = await movie_service.delete_movie(movie_id)
-    return DeleteMovieResponse(movie=movie)
+    return deleted_movie

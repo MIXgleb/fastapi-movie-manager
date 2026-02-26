@@ -5,20 +5,22 @@ services:
       dockerfile: Dockerfile
     container_name: fastapi-movies
     env_file:
-      - .env
+      - envs/.env.template
+      - envs/.env
     environment:
-      APP__HOST: app
-      APP__PORT: 8000
-      DB__HOST: postgres
-      DB__PORT: 5432
-      REDIS__HOST: redis
-      REDIS__PORT: 6379
+      MOVIE_MANAGER__APP__HOST: app
+      MOVIE_MANAGER__DB__HOST: postgres
+      MOVIE_MANAGER__REDIS__HOST: redis
+      MOVIE_MANAGER__DB__USERNAME: ${POSTGRES_USER}
+      MOVIE_MANAGER__DB__PASSWORD: ${POSTGRES_PASSWORD}
+      MOVIE_MANAGER__DB__DATABASE: ${POSTGRES_DB}
+      MOVIE_MANAGER__LOGGING__LOG_FOLDER: ${LOG_FOLDER}
     volumes:
       - type: volume
         source: app_logs
-        target: $PWD/${LOGGING__LOG_FOLDER}
+        target: $PWD/${LOG_FOLDER}
     ports:
-      - ${APP__PORT}:8000
+      - ${APP_PORT}:8000
     networks:
       - backend
     depends_on:
@@ -62,7 +64,7 @@ services:
         source: redis_data
         target: /data
     ports:
-      - ${REDIS__PORT}:6379
+      - ${REDIS_PORT}:6379
     networks:
       - backend
     healthcheck:
@@ -77,20 +79,20 @@ services:
     image: postgres:16
     container_name: postgres16
     environment:
-      POSTGRES_DB: ${DB__TABLENAME}
-      POSTGRES_USER: ${DB__USERNAME}
-      POSTGRES_PASSWORD: ${DB__PASSWORD}
-      PGDATA: /var/lib/postgresql/data/
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: ${PGDATA}
     volumes:
       - type: volume
         source: pg_data
-        target: /var/lib/postgresql/data
+        target: ${PGDATA}
     ports:
-      - ${DB__PORT}:5432
+      - ${POSTGRES_PORT}:5432
     networks:
       - backend
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "${DB__USERNAME}", "-d", "${DB__TABLENAME}" ]
+      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}" ]
       interval: 30s
       timeout: 2s
       retries: 5

@@ -4,16 +4,23 @@ from typing import (
 
 from sqlalchemy.orm import (
     Mapped,
+    declarative_mixin,
     mapped_column,
     validates,
 )
 
-from app.core.exceptions import (
-    ImmutableValueError,
-)
+import app.core.exceptions as exc
 
 
-class IntIdPkMixin:
+@declarative_mixin
+class IntIDMixin:
+    """
+    Id mixin.
+
+    Columns:
+        id: int
+    """
+
     id: Mapped[int] = mapped_column(primary_key=True)
 
     @validates("id")
@@ -22,4 +29,4 @@ class IntIdPkMixin:
         field: str,
         _: int,
     ) -> Never:
-        raise ImmutableValueError(field)
+        raise exc.ImmutableValueError(field)

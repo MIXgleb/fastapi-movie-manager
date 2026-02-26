@@ -4,16 +4,9 @@ from fastapi import (
     APIRouter,
 )
 
-from app.api.internal_routers.health import (
+from app.api.internal_routers.healthcheck import (
     router as health_router,
 )
-from app.core import (
-    dep_rate_limiter_getter,
-)
 
-router = APIRouter(
-    dependencies=[
-        dep_rate_limiter_getter(seconds=1),
-    ],
-)
+router = APIRouter(tags=["Internal"])
 router.include_router(health_router)
